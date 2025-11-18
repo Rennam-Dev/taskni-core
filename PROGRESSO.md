@@ -391,6 +391,7 @@ taskni-core/
 │       │   └── ingest.py            ✅ Pipeline de ingestão
 │       ├── schema/
 │       │   ├── agent_io.py          ✅ Request/Response
+│       │   ├── agent_inputs.py      ✅ Validação Pydantic
 │       │   └── crm.py               ✅ Patient, Appointment, Ticket
 │       ├── memory/                  ⏳ A implementar
 │       └── main.py                  ✅ App FastAPI
@@ -400,7 +401,10 @@ taskni-core/
 │   ├── test_intake_prompt.py       ✅ Validação de prompts
 │   ├── test_multi_provider.py      ✅ Sistema multi-provedor
 │   ├── test_rag_agent.py           ✅ Sistema RAG completo
-│   └── test_followup_agent.py      ✅ Sistema de followup
+│   ├── test_followup_agent.py      ✅ Sistema de followup
+│   ├── test_agent_validation.py    ✅ Validação Pydantic
+│   ├── test_rag_cache.py           ✅ Sistema de cache RAG
+│   └── test_firewall_detection.py  ✅ Detecção de firewall
 │
 └── docs/
     ├── PROGRESSO.md                 📄 Este arquivo
@@ -408,6 +412,118 @@ taskni-core/
     ├── SETUP_FREE_LLMS.md          📄 Guia de LLMs gratuitas
     └── NETWORK_ISSUES.md           📄 Problemas de rede
 ```
+
+---
+
+## 🚀 Melhorias Implementadas (Sessão 2)
+
+### ✅ Melhoria 1: Agendamento Inteligente (Commit `cca33b7`)
+
+**Implementação:**
+- Horários comerciais no `FollowupAgent._schedule_send()`
+- Método `_adjust_to_business_hours()` para ajustes automáticos
+- Regras específicas por tipo de intenção
+
+**Regras de agendamento:**
+- **pos_consulta**: Próxima manhã às 10h
+- **abandono**: Daqui 2 horas
+- **lead_frio**: Amanhã às 16h
+- **checagem_retorno**: Amanhã às 10h
+- **agendar_consulta**: Hoje às 18h
+- **reativacao**: Hoje às 18h
+
+**Horário comercial:** 8h-20h, seg-sex (evita fins de semana)
+
+---
+
+### ✅ Melhoria 2: Validação Pydantic (Commit `6f9d5f6`)
+
+**Implementação:**
+- Arquivo `src/taskni_core/schema/agent_inputs.py`
+- Schemas: `FollowupInput`, `RagQueryInput`, `IntakeInput`
+- Validadores customizados com `@field_validator`
+
+**Validações:**
+- `patient_name`: não-vazio, máx 200 chars
+- `days_inactive`: >= 0
+- `question`: não-vazia, máx 500 chars
+- `k_documents`: 1-10 (opcional)
+
+**Benefícios:**
+- Erros detectados antes de processar
+- Mensagens de erro claras
+- Type hints melhores
+
+**Testes:** ✅ 7/7 validações testadas
+
+---
+
+### ✅ Melhoria 3: Cache RAG (Commit `7fdac1e`)
+
+**Implementação:**
+- Cache FIFO com `OrderedDict`
+- Métodos: `_get_cache_key()`, `_get_from_cache()`, `_save_to_cache()`
+- Hash MD5 para chaves
+- Normalização de perguntas (lowercase, strip)
+
+**Funcionalidades:**
+- Tamanho configurável (default: 50)
+- Descarte automático (FIFO)
+- `get_cache_stats()` para monitoramento
+- `clear_cache()` para limpar
+
+**Estrutura:**
+```python
+cache = {
+  "hash_md5": {
+    "answer": str,
+    "sources": List[str]
+  }
+}
+```
+
+**Benefícios:**
+- Resposta instantânea (cache hit)
+- Reduz tokens LLM
+- Menor carga no ChromaDB
+
+**Output atualizado:**
+```python
+{
+  "answer": str,
+  "sources": List[str],
+  "cached": bool  # Novo campo
+}
+```
+
+**Testes:** ✅ 4/4 testes de cache passando
+
+---
+
+### ✅ Melhoria 4: Detecção de Firewall (Commit `0575f3d`)
+
+**Implementação:**
+- Método `_is_firewalled()` em `DocumentIngestion`
+- Usa `httpx` para testar acesso à OpenAI
+- Timeout de 2 segundos
+
+**Comportamento:**
+1. **API key + ambiente liberado**: OpenAIEmbeddings
+2. **API key + firewall detectado**: FakeEmbeddings + aviso
+3. **Sem API key**: FakeEmbeddings
+
+**Vantagens:**
+- Detecção automática (sem config manual)
+- Evita timeouts/erros SSL
+- Fallback gracioso
+- Sistema sempre operacional
+
+**Mensagens de log:**
+- `✅ Usando OpenAI Embeddings`
+- `⚠️ Firewall/proxy detectado`
+- `📝 Usando FakeEmbeddings`
+
+**Testes:** ✅ 4/4 testes de detecção passando
 
 ---
 

@@ -1,231 +1,562 @@
-# 🧰 AI Agent Service Toolkit
+# 🏥 Taskni Core
 
-[![build status](https://github.com/JoshuaC215/agent-service-toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/JoshuaC215/agent-service-toolkit/actions/workflows/test.yml) [![codecov](https://codecov.io/github/JoshuaC215/agent-service-toolkit/graph/badge.svg?token=5MTJSYWD05)](https://codecov.io/github/JoshuaC215/agent-service-toolkit) [![Python Version](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FJoshuaC215%2Fagent-service-toolkit%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)](https://github.com/JoshuaC215/agent-service-toolkit/blob/main/pyproject.toml)
-[![GitHub License](https://img.shields.io/github/license/JoshuaC215/agent-service-toolkit)](https://github.com/JoshuaC215/agent-service-toolkit/blob/main/LICENSE) [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_red.svg)](https://agent-service-toolkit.streamlit.app/)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-green.svg)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-orange.svg)](https://langchain-ai.github.io/langgraph/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-A full toolkit for running an AI agent service built with LangGraph, FastAPI and Streamlit.
+Sistema de automação inteligente para clínicas, construído com FastAPI, LangGraph e múltiplos provedores de LLM.
 
-It includes a [LangGraph](https://langchain-ai.github.io/langgraph/) agent, a [FastAPI](https://fastapi.tiangolo.com/) service to serve it, a client to interact with the service, and a [Streamlit](https://streamlit.io/) app that uses the client to provide a chat interface. Data structures and settings are built with [Pydantic](https://github.com/pydantic/pydantic).
+## 🎯 Visão Geral
 
-This project offers a template for you to easily build and run your own agents using the LangGraph framework. It demonstrates a complete setup from agent definition to user interface, making it easier to get started with LangGraph-based projects by providing a full, robust toolkit.
+O **Taskni Core** é uma plataforma robusta de agentes de IA especializados para automação de processos em clínicas. O sistema implementa:
 
-**[🎥 Watch a video walkthrough of the repo and app](https://www.youtube.com/watch?v=pdYVHw_YCNY)**
+- **3 Agentes Especializados** (Intake, FAQ/RAG, Follow-up)
+- **Multi-Provider LLM** com fallback automático (Groq → OpenAI → FakeModel)
+- **Sistema RAG** completo com ChromaDB e detecção de firewall
+- **Workflows LangGraph** com state management
+- **API REST** completa com streaming de respostas
+- **Validação Pydantic** em todos os inputs
+- **Cache inteligente** para redução de custos
+- **Agendamento automático** respeitando horários comerciais
 
-## Overview
+---
 
-### [Try the app!](https://agent-service-toolkit.streamlit.app/)
+## 🚀 Melhorias Recentes (v2.0)
 
-<a href="https://agent-service-toolkit.streamlit.app/"><img src="media/app_screenshot.png" width="600"></a>
+### 1. ⏰ Agendamento Inteligente
+- **Horários comerciais**: 8h-20h, segunda a sexta
+- **Evita finais de semana**: Mensagens movidas automaticamente para segunda-feira
+- **Regras por intenção**:
+  - `pos_consulta` → Manhã seguinte às 10h
+  - `abandono` → 2 horas após detectar
+  - `lead_frio` → Amanhã às 16h
+  - `checagem_retorno` → Amanhã às 10h
+  - `reativacao` → Hoje às 18h
+  - `agendar_consulta` → Hoje às 18h
 
-### Quickstart
+### 2. ✅ Validação Pydantic
+- **Inputs validados** para todos os agentes
+- **Mensagens de erro claras** em português
+- **Type safety** com Pydantic v2
+- **Validações customizadas**:
+  - `days_inactive >= 0`
+  - `patient_name` não pode ser vazio
+  - `k_documents` entre 1-10
 
-Run directly in python
+### 3. 💾 Cache para RAG
+- **50 respostas em cache** (FIFO)
+- **Normalização de perguntas** (case-insensitive)
+- **MD5 hash** para chaves de cache
+- **Redução de custos** com OpenAI
+- **Resposta instantânea** em cache hits
 
-```sh
-# At least one LLM API key is required
-echo 'OPENAI_API_KEY=your_openai_api_key' >> .env
+### 4. 🔒 Detecção de Firewall
+- **Detecção automática** de ambiente bloqueado
+- **Fallback inteligente** para FakeEmbeddings
+- **Timeout rápido** (2 segundos)
+- **Sistema continua operacional** mesmo com firewall
 
-# uv is the recommended way to install agent-service-toolkit, but "pip install ." also works
-# For uv installation options, see: https://docs.astral.sh/uv/getting-started/installation/
-curl -LsSf https://astral.sh/uv/0.7.19/install.sh | sh
+---
 
-# Install dependencies. "uv sync" creates .venv automatically
-uv sync --frozen
-source .venv/bin/activate
+## 🏗️ Arquitetura
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      FastAPI Service                        │
+│                    (src/service/service.py)                 │
+└────────────┬────────────────────────────────────────────────┘
+             │
+    ┌────────┴────────┐
+    │  Agent Registry  │
+    │  (registry.py)   │
+    └────────┬────────┘
+             │
+    ┌────────┴─────────────────────────────────────┐
+    │                                              │
+┌───▼────────┐  ┌──────────────┐  ┌──────────────┐
+│  Intake    │  │  FAQ RAG     │  │  Follow-up   │
+│  Agent     │  │  Agent       │  │  Agent       │
+│ (simples)  │  │ (LangGraph)  │  │ (LangGraph)  │
+└────────────┘  └───────┬──────┘  └───────┬──────┘
+                        │                 │
+                ┌───────▼─────┐   ┌───────▼─────────┐
+                │ ChromaDB    │   │ 6 Tipos de      │
+                │ + Embeddings│   │ Intenções       │
+                └─────────────┘   └─────────────────┘
+                        │
+                ┌───────▼──────────────────────┐
+                │   Multi-Provider LLM         │
+                │   Groq → OpenAI → FakeModel  │
+                └──────────────────────────────┘
+```
+
+---
+
+## 🤖 Agentes Disponíveis
+
+### 1. IntakeAgent (Triagem)
+**Tipo**: Agente Simples (BaseAgent)
+**Endpoint**: `/intake/invoke`
+
+Primeiro contato com pacientes, realiza triagem inicial e coleta informações básicas.
+
+**Input**:
+```json
+{
+  "message": "Gostaria de agendar uma consulta",
+  "user_id": "patient_001",
+  "metadata": {"phone": "+5511987654321"}
+}
+```
+
+**Output**:
+```json
+{
+  "response": "Olá! Vou ajudá-lo a agendar. Qual especialidade você precisa?",
+  "intent": "agendamento",
+  "next_step": "coletar_especialidade"
+}
+```
+
+---
+
+### 2. FaqRagAgent (Perguntas Frequentes)
+**Tipo**: Agente LangGraph (CompiledStateGraph)
+**Endpoint**: `/faq/invoke`
+
+Responde perguntas usando RAG (Retrieval-Augmented Generation) com ChromaDB.
+
+**Workflow**:
+```
+retrieve_docs → generate_answer → END
+```
+
+**Input**:
+```json
+{
+  "question": "Qual o horário de funcionamento?",
+  "k_documents": 4
+}
+```
+
+**Output**:
+```json
+{
+  "answer": "Funcionamos de segunda a sexta, das 8h às 18h.",
+  "sources": ["FAQ-001", "FAQ-010"],
+  "retrieved_docs": [...],
+  "cached": false
+}
+```
+
+**Features**:
+- ✅ Cache de 50 respostas (FIFO)
+- ✅ Detecção automática de firewall
+- ✅ Fallback para FakeEmbeddings
+- ✅ Streaming de resposta
+
+---
+
+### 3. FollowupAgent (Reativação)
+**Tipo**: Agente LangGraph (CompiledStateGraph)
+**Endpoint**: `/followup/invoke`
+
+Gera mensagens de reativação personalizadas baseadas em 6 tipos de intenções.
+
+**Workflow**:
+```
+detect_intent → generate_message → schedule_send → END
+```
+
+**Intenções Detectadas**:
+1. **pos_consulta**: Acompanhamento pós-consulta (2-5 dias)
+2. **abandono**: Retomar conversas iniciadas (3-7 dias)
+3. **lead_frio**: Reativar leads antigos (30+ dias)
+4. **checagem_retorno**: Verificar necessidade de retorno (7-15 dias)
+5. **reativacao**: Reativar pacientes inativos (15-60 dias)
+6. **agendar_consulta**: Lembrar check-ups periódicos (90+ dias)
+
+**Input**:
+```json
+{
+  "patient_name": "João Silva",
+  "days_inactive": 45,
+  "last_message": "Obrigado!",
+  "context": {"is_patient": true}
+}
+```
+
+**Output**:
+```json
+{
+  "intent": "reativacao",
+  "message": "Olá João! Como você está? Faz um tempo que não nos falamos. Tem algo em que posso ajudar?",
+  "ready_for_delivery": true,
+  "send_at": "2025-01-22T18:00:00-03:00"
+}
+```
+
+**Features**:
+- ✅ 6 tipos de intenções detectadas automaticamente
+- ✅ Mensagens curtas e naturais (< 500 chars)
+- ✅ Agendamento inteligente com horários comerciais
+- ✅ Evita finais de semana
+- ✅ Validação Pydantic nos inputs
+
+---
+
+## 📦 Instalação
+
+### Pré-requisitos
+- Python 3.11+
+- pip ou uv
+- API keys (opcional: OpenAI ou Groq)
+
+### Setup Básico
+
+```bash
+# Clone o repositório
+git clone https://github.com/Rennam-Dev/taskni-core.git
+cd taskni-core
+
+# Instale as dependências
+pip install -e .
+
+# Configure as variáveis de ambiente
+cp .env.example .env
+# Edite .env com suas API keys (opcional)
+
+# Execute os testes
+pytest
+
+# Inicie o servidor
 python src/run_service.py
-
-# In another shell
-source .venv/bin/activate
-streamlit run src/streamlit_app.py
 ```
 
-Run with docker
+O servidor estará disponível em `http://localhost:8080`
 
-```sh
-echo 'OPENAI_API_KEY=your_openai_api_key' >> .env
-docker compose watch
+Acesse a documentação em `http://localhost:8080/docs`
+
+---
+
+## ⚙️ Configuração
+
+### Variáveis de Ambiente (.env)
+
+```bash
+# LLM Providers (opcional - usa FakeModel se não configurado)
+OPENAI_API_KEY=sk-...
+GROQ_API_KEY=gsk_...
+
+# Configurações dos Agentes
+ENABLE_INTAKE_AGENT=true
+ENABLE_FAQ_AGENT=true
+ENABLE_FOLLOWUP_AGENT=true
+ENABLE_BILLING_AGENT=false
+
+# LLM Settings
+PRIMARY_LLM_PROVIDER=groq
+FALLBACK_LLM_PROVIDER=openai
+ENABLE_STREAMING=true
+
+# RAG Settings
+CHROMADB_PERSIST_DIR=./data/chroma
+FAQ_COLLECTION_NAME=clinic_faq
+CHUNK_SIZE=500
+CHUNK_OVERLAP=50
+
+# Cache Settings (interno ao agente)
+RAG_CACHE_SIZE=50  # número de respostas em cache
 ```
 
-### Architecture Diagram
+### Settings Python
 
-<img src="media/agent_architecture.png" width="600">
+Todas as configurações estão em `src/taskni_core/core/settings.py` usando Pydantic Settings.
 
-### Key Features
+---
 
-1. **LangGraph Agent and latest features**: A customizable agent built using the LangGraph framework. Implements the latest LangGraph v0.3 features including human in the loop with `interrupt()`, flow control with `Command`, long-term memory with `Store`, and `langgraph-supervisor`.
-1. **FastAPI Service**: Serves the agent with both streaming and non-streaming endpoints.
-1. **Advanced Streaming**: A novel approach to support both token-based and message-based streaming.
-1. **Streamlit Interface**: Provides a user-friendly chat interface for interacting with the agent.
-1. **Multiple Agent Support**: Run multiple agents in the service and call by URL path. Available agents and models are described in `/info`
-1. **Asynchronous Design**: Utilizes async/await for efficient handling of concurrent requests.
-1. **Content Moderation**: Implements LlamaGuard for content moderation (requires Groq API key).
-1. **RAG Agent**: A basic RAG agent implementation using ChromaDB - see [docs](docs/RAG_Assistant.md).
-1. **Feedback Mechanism**: Includes a star-based feedback system integrated with LangSmith.
-1. **Docker Support**: Includes Dockerfiles and a docker compose file for easy development and deployment.
-1. **Testing**: Includes robust unit and integration tests for the full repo.
+## 🔌 API Endpoints
 
-### Key Files
+### Health Check
+```bash
+GET /health
+```
 
-The repository is structured as follows:
+### Agent Registry
+```bash
+GET /agents
+```
 
-- `src/agents/`: Defines several agents with different capabilities
-- `src/schema/`: Defines the protocol schema
-- `src/core/`: Core modules including LLM definition and settings
-- `src/service/service.py`: FastAPI service to serve the agents
-- `src/client/client.py`: Client to interact with the agent service
-- `src/streamlit_app.py`: Streamlit app providing a chat interface
-- `tests/`: Unit and integration tests
+Retorna lista de agentes registrados:
+```json
+[
+  {
+    "id": "intake",
+    "name": "IntakeAgent",
+    "description": "Triagem inicial de pacientes",
+    "type": "simple",
+    "enabled": true
+  },
+  {
+    "id": "faq_rag",
+    "name": "FaqRagAgent",
+    "description": "FAQ com RAG",
+    "type": "langgraph",
+    "enabled": true
+  }
+]
+```
 
-## Setup and Usage
+### Invoke Agent
+```bash
+POST /{agent_id}/invoke
+Content-Type: application/json
 
-1. Clone the repository:
+{
+  "message": "input parameters..."
+}
+```
 
-   ```sh
-   git clone https://github.com/JoshuaC215/agent-service-toolkit.git
-   cd agent-service-toolkit
-   ```
+### Stream Agent (LangGraph apenas)
+```bash
+POST /{agent_id}/stream
+Content-Type: application/json
 
-2. Set up environment variables:
-   Create a `.env` file in the root directory. At least one LLM API key or configuration is required. See the [`.env.example` file](./.env.example) for a full list of available environment variables, including a variety of model provider API keys, header-based authentication, LangSmith tracing, testing and development modes, and OpenWeatherMap API key.
+{
+  "question": "..."
+}
+```
 
-3. You can now run the agent service and the Streamlit app locally, either with Docker or just using Python. The Docker setup is recommended for simpler environment setup and immediate reloading of the services when you make changes to your code.
+Retorna SSE (Server-Sent Events) com chunks de resposta.
 
-### Additional setup for specific AI providers
+---
 
-- [Setting up Ollama](docs/Ollama.md)
-- [Setting up VertexAI](docs/VertexAI.md)
-- [Setting up RAG with ChromaDB](docs/RAG_Assistant.md)
+## 📁 Estrutura do Projeto
 
-### Building or customizing your own agent
+```
+taskni-core/
+├── src/
+│   └── taskni_core/
+│       ├── agents/              # Agentes de IA
+│       │   ├── base.py          # BaseAgent
+│       │   ├── intake_agent.py  # IntakeAgent
+│       │   ├── registry.py      # Registry de agentes
+│       │   └── advanced/        # Agentes LangGraph
+│       │       ├── followup_agent.py  # FollowupAgent
+│       │       └── rag_agent.py       # FaqRagAgent
+│       ├── core/                # Configurações
+│       │   ├── llm.py           # Multi-provider LLM
+│       │   └── settings.py      # Settings Pydantic
+│       ├── rag/                 # Sistema RAG
+│       │   ├── ingest.py        # Ingestão com detecção de firewall
+│       │   └── retrieval.py     # Retrieval
+│       ├── schema/              # Schemas Pydantic
+│       │   ├── agent_inputs.py  # Validação de inputs
+│       │   └── agent_state.py   # Estados LangGraph
+│       └── service/             # FastAPI Service
+│           └── service.py       # Servidor principal
+├── tests/                       # Testes
+│   ├── test_agents.py
+│   ├── test_llm.py
+│   ├── test_rag.py
+│   └── test_service.py
+├── test_*.py                    # Testes standalone
+├── data/                        # Dados persistentes
+│   └── chroma/                  # ChromaDB
+├── .env                         # Variáveis de ambiente
+├── pyproject.toml               # Dependências
+├── PROGRESSO.md                 # Histórico de desenvolvimento
+└── README.md                    # Este arquivo
+```
 
-To customize the agent for your own use case:
+---
 
-1. Add your new agent to the `src/agents` directory. You can copy `research_assistant.py` or `chatbot.py` and modify it to change the agent's behavior and tools.
-1. Import and add your new agent to the `agents` dictionary in `src/agents/agents.py`. Your agent can be called by `/<your_agent_name>/invoke` or `/<your_agent_name>/stream`.
-1. Adjust the Streamlit interface in `src/streamlit_app.py` to match your agent's capabilities.
+## 🧪 Testes
 
+### Rodar Todos os Testes
+```bash
+pytest
+```
 
-### Handling Private Credential files
+### Testes Standalone
 
-If your agents or chosen LLM require file-based credential files or certificates, the `privatecredentials/` has been provided for your development convenience. All contents, excluding the `.gitkeep` files, are ignored by git and docker's build process. See [Working with File-based Credentials](docs/File_Based_Credentials.md) for suggested use.
+```bash
+# Teste de validação Pydantic
+python test_agent_validation.py
 
+# Teste de cache do RAG
+python test_rag_cache.py
 
-### Docker Setup
+# Teste de detecção de firewall
+python test_firewall_detection.py
 
-This project includes a Docker setup for easy development and deployment. The `compose.yaml` file defines three services: `postgres`, `agent_service` and `streamlit_app`. The `Dockerfile` for each service is in their respective directories.
+# Teste completo do FollowupAgent
+python test_followup_agent.py
+```
 
-For local development, we recommend using [docker compose watch](https://docs.docker.com/compose/file-watch/). This feature allows for a smoother development experience by automatically updating your containers when changes are detected in your source code.
+### Cobertura de Testes
 
-1. Make sure you have Docker and Docker Compose (>= [v2.23.0](https://docs.docker.com/compose/release-notes/#2230)) installed on your system.
+| Componente | Testes | Status |
+|-----------|--------|--------|
+| MultiProviderLLM | 8 | ✅ 100% |
+| FaqRagAgent | 7 | ✅ 100% |
+| FollowupAgent | 9 | ✅ 100% |
+| Validação Pydantic | 7 | ✅ 100% |
+| Cache RAG | 4 | ✅ 100% |
+| Detecção Firewall | 4 | ✅ 100% |
+| **TOTAL** | **39** | **✅ 100%** |
 
-2. Create a `.env` file from the `.env.example`. At minimum, you need to provide an LLM API key (e.g., OPENAI_API_KEY).
-   ```sh
-   cp .env.example .env
-   # Edit .env to add your API keys
-   ```
+---
 
-3. Build and launch the services in watch mode:
+## 🛠️ Desenvolvimento
 
-   ```sh
-   docker compose watch
-   ```
+### Adicionar um Novo Agente
 
-   This will automatically:
-   - Start a PostgreSQL database service that the agent service connects to
-   - Start the agent service with FastAPI
-   - Start the Streamlit app for the user interface
-
-4. The services will now automatically update when you make changes to your code:
-   - Changes in the relevant python files and directories will trigger updates for the relevant services.
-   - NOTE: If you make changes to the `pyproject.toml` or `uv.lock` files, you will need to rebuild the services by running `docker compose up --build`.
-
-5. Access the Streamlit app by navigating to `http://localhost:8501` in your web browser.
-
-6. The agent service API will be available at `http://0.0.0.0:8080`. You can also use the OpenAPI docs at `http://0.0.0.0:8080/redoc`.
-
-7. Use `docker compose down` to stop the services.
-
-This setup allows you to develop and test your changes in real-time without manually restarting the services.
-
-### Building other apps on the AgentClient
-
-The repo includes a generic `src/client/client.AgentClient` that can be used to interact with the agent service. This client is designed to be flexible and can be used to build other apps on top of the agent. It supports both synchronous and asynchronous invocations, and streaming and non-streaming requests.
-
-See the `src/run_client.py` file for full examples of how to use the `AgentClient`. A quick example:
-
+1. **Agente Simples** (herda de `BaseAgent`):
 ```python
-from client import AgentClient
-client = AgentClient()
+# src/taskni_core/agents/my_agent.py
+from taskni_core.agents.base import BaseAgent
 
-response = client.invoke("Tell me a brief joke?")
-response.pretty_print()
-# ================================== Ai Message ==================================
-#
-# A man walked into a library and asked the librarian, "Do you have any books on Pavlov's dogs and Schrödinger's cat?"
-# The librarian replied, "It rings a bell, but I'm not sure if it's here or not."
+class MyAgent(BaseAgent):
+    id = "my_agent"
+    name = "My Agent"
+    description = "Descrição do agente"
 
+    async def run(self, **kwargs) -> dict:
+        # Sua lógica aqui
+        return {"response": "..."}
 ```
 
-### Development with LangGraph Studio
+2. **Agente LangGraph** (CompiledStateGraph):
+```python
+# src/taskni_core/agents/advanced/my_langgraph_agent.py
+from langgraph.graph import StateGraph
 
-The agent supports [LangGraph Studio](https://langchain-ai.github.io/langgraph/concepts/langgraph_studio/), the IDE for developing agents in LangGraph.
+def create_my_agent():
+    workflow = StateGraph(MyState)
+    workflow.add_node("node1", node1_func)
+    workflow.add_edge("node1", END)
+    workflow.set_entry_point("node1")
 
-`langgraph-cli[inmem]` is installed with `uv sync`. You can simply add your `.env` file to the root directory as described above, and then launch LangGraph Studio with `langgraph dev`. Customize `langgraph.json` as needed. See the [local quickstart](https://langchain-ai.github.io/langgraph/cloud/how-tos/studio/quick_start/#local-development-server) to learn more.
+    graph = workflow.compile()
+    graph.id = "my_langgraph"
+    graph.name = "My LangGraph Agent"
+    return graph
+```
 
-### Local development without Docker
+3. **Registrar** no `registry.py`:
+```python
+from taskni_core.agents.my_agent import MyAgent
+agent_registry.register(
+    agent=MyAgent(),
+    enabled=True
+)
+```
 
-You can also run the agent service and the Streamlit app locally without Docker, just using a Python virtual environment.
+---
 
-1. Create a virtual environment and install dependencies:
+## 🗺️ Roadmap
 
-   ```sh
-   uv sync --frozen
-   source .venv/bin/activate
-   ```
+### ✅ Concluído
+- [x] Multi-provider LLM com fallback automático
+- [x] Sistema RAG completo com ChromaDB
+- [x] FollowupAgent com 6 tipos de intenções
+- [x] Agendamento inteligente com horários comerciais
+- [x] Validação Pydantic em todos os inputs
+- [x] Cache para respostas RAG
+- [x] Detecção automática de firewall
+- [x] 39 testes com 100% de cobertura
+- [x] Documentação completa
 
-2. Run the FastAPI server:
+### 🚧 Em Progresso
+- [ ] BillingAgent (cobrança automática)
+- [ ] Integração com WhatsApp Business API
+- [ ] Dashboard de métricas
 
-   ```sh
-   python src/run_service.py
-   ```
+### 📋 Planejado
+- [ ] Autenticação e autorização (JWT)
+- [ ] Multi-tenancy (várias clínicas)
+- [ ] Agente de agendamento automático
+- [ ] Integração com sistemas de prontuário
+- [ ] Webhooks para eventos
+- [ ] Monitoramento com Prometheus/Grafana
+- [ ] Deploy em Kubernetes
 
-3. In a separate terminal, run the Streamlit app:
+---
 
-   ```sh
-   streamlit run src/streamlit_app.py
-   ```
+## 📊 Tecnologias Utilizadas
 
-4. Open your browser and navigate to the URL provided by Streamlit (usually `http://localhost:8501`).
+- **Framework Backend**: FastAPI 0.115+
+- **Orquestração de Agentes**: LangGraph 0.2+
+- **LLM Providers**: OpenAI, Groq, FakeModel
+- **Vector Database**: ChromaDB
+- **Embeddings**: OpenAI text-embedding-3-small
+- **Validação**: Pydantic 2.x
+- **State Management**: LangGraph StateGraph
+- **Cache**: OrderedDict (Python stdlib)
+- **HTTP Client**: httpx
+- **Testing**: pytest
 
-## Projects built with or inspired by agent-service-toolkit
+---
 
-The following are a few of the public projects that drew code or inspiration from this repo.
+## 📝 Commits Recentes
 
-- **[PolyRAG](https://github.com/QuentinFuxa/PolyRAG)** - Extends agent-service-toolkit with RAG capabilities over both PostgreSQL databases and PDF documents.
-- **[alexrisch/agent-web-kit](https://github.com/alexrisch/agent-web-kit)** - A Next.JS frontend for agent-service-toolkit
-- **[raushan-in/dapa](https://github.com/raushan-in/dapa)** - Digital Arrest Protection App (DAPA) enables users to report financial scams and frauds efficiently via a user-friendly platform.
+```bash
+0575f3d - feat: add firewall detection for embeddings
+7fdac1e - feat: add caching to FaqRagAgent
+6f9d5f6 - feat: add Pydantic input validation for agents
+cca33b7 - feat: add intelligent scheduling to FollowupAgent
+33aca99 - feat: Implementa FollowupAgent com LangGraph
+894cde7 - feat: Implementa sistema RAG completo com FaqRagAgent
+3750765 - feat: Implementa sistema multi-provedor LLM com streaming
+```
 
-**Please create a pull request editing the README or open a discussion with any new ones to be added!** Would love to include more projects.
+---
 
-## Contributing
+## 🤝 Contribuindo
 
-Contributions are welcome! Please feel free to submit a Pull Request. Currently the tests need to be run using the local development without Docker setup. To run the tests for the agent service:
+Contribuições são bem-vindas! Por favor:
 
-1. Ensure you're in the project root directory and have activated your virtual environment.
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-2. Install the development dependencies and pre-commit hooks:
+### Padrões de Código
+- Use `ruff` para linting
+- Use `black` para formatação
+- Adicione testes para novas features
+- Atualize a documentação conforme necessário
 
-   ```sh
-   uv sync --frozen
-   pre-commit install
-   ```
+---
 
-3. Run the tests using pytest:
+## 📄 Licença
 
-   ```sh
-   pytest
-   ```
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-## License
+---
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+## 👥 Autores
+
+- **Rennam-Dev** - Desenvolvimento e manutenção
+
+---
+
+## 🙏 Agradecimentos
+
+- **LangChain/LangGraph**: Framework de orquestração de agentes
+- **FastAPI**: Framework web moderno e rápido
+- **Anthropic/OpenAI/Groq**: Provedores de LLM
+- **ChromaDB**: Vector database open-source
+
+---
+
+## 📧 Suporte
+
+Para questões ou suporte, abra uma issue no GitHub ou entre em contato através do repositório.
+
+---
+
+**Taskni Core** - Automatizando clínicas com IA 🏥🤖
