@@ -8,6 +8,7 @@ from typing import Annotated, Any
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -100,6 +101,22 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id)
+
+# Configuração CORS para permitir requisições do frontend
+# Em desenvolvimento, permite todas as origens
+# Em produção, configure CORS_ORIGINS no .env com as origens permitidas
+cors_origins = ["*"]  # Permite todas as origens em desenvolvimento
+if hasattr(settings, "CORS_ORIGINS") and settings.CORS_ORIGINS:
+    cors_origins = settings.CORS_ORIGINS.split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc.)
+    allow_headers=["*"],  # Permite todos os headers
+)
+
 router = APIRouter(dependencies=[Depends(verify_bearer)])
 
 
