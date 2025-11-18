@@ -1,23 +1,21 @@
 """
 Settings específicos do Taskni Core.
 
-Herda do Settings base do Agent Service Toolkit e adiciona
-configurações específicas para integrações de clínicas/negócios.
+Usa composição ao invés de herança para evitar problemas de import.
+O TaskniSettings tem suas próprias configurações e acessa as do toolkit
+via `core_settings` quando necessário.
 """
 
 from pydantic import SecretStr
-from pydantic_settings import SettingsConfigDict
-
-# Importa o Settings base do toolkit
-from core.settings import Settings as BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class TaskniSettings(BaseSettings):
     """
     Configurações do Taskni Core.
 
-    Herda todas as configurações do Agent Service Toolkit (LLMs, database, etc)
-    e adiciona as específicas para clínicas e pequenos negócios.
+    Específicas para clínicas e pequenos negócios.
+    Para acessar configurações do toolkit (LLMs, database), use `core_settings`.
     """
 
     model_config = SettingsConfigDict(
@@ -27,6 +25,14 @@ class TaskniSettings(BaseSettings):
         extra="ignore",
         validate_default=False,
     )
+
+    # ==========================================
+    # Server Configuration
+    # ==========================================
+    MODE: str | None = None
+    HOST: str = "0.0.0.0"
+    PORT: int = 8080
+    LOG_LEVEL: str = "INFO"
 
     # ==========================================
     # Integrações específicas do Taskni
@@ -85,6 +91,26 @@ class TaskniSettings(BaseSettings):
     FAQ_VECTOR_STORE_PATH: str | None = None
     FAQ_COLLECTION_NAME: str = "clinic_faq"
 
+    def is_dev(self) -> bool:
+        """Check if running in development mode."""
+        return self.MODE == "dev"
 
-# Singleton
+
+# Singleton do Taskni
 taskni_settings = TaskniSettings()
+
+# Helper para acessar settings do toolkit de forma lazy (evita import circular)
+_core_settings = None
+
+
+def get_core_settings():
+    """
+    Retorna o settings do toolkit de forma lazy.
+
+    Isso evita import circular e problemas de inicialização.
+    """
+    global _core_settings
+    if _core_settings is None:
+        from core.settings import settings as core_settings
+        _core_settings = core_settings
+    return _core_settings

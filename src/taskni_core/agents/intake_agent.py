@@ -10,7 +10,6 @@ Ideal para começar rápido sem complexidade.
 
 from typing import Any, Dict
 
-from core.llm import get_model
 from taskni_core.agents.base import BaseAgent
 from taskni_core.core.settings import taskni_settings
 
@@ -31,9 +30,17 @@ class IntakeAgent(BaseAgent):
     )
 
     def __init__(self):
-        # Usa o LLM do toolkit (configurado via settings)
-        # Usa o modelo padrão configurado em DEFAULT_MODEL
-        self.llm = get_model(taskni_settings.DEFAULT_MODEL)
+        # LLM será inicializado lazy no primeiro uso
+        self._llm = None
+
+    @property
+    def llm(self):
+        """Lazy load do LLM."""
+        if self._llm is None:
+            from core.llm import get_model
+            from core.settings import settings as core_settings
+            self._llm = get_model(core_settings.DEFAULT_MODEL)
+        return self._llm
 
     async def run(self, message: str, context: Dict[str, Any]) -> str:
         """
