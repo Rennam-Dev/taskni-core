@@ -209,9 +209,45 @@ class FollowupAgent:
             "message": message.strip(),
         }
 
+    def _adjust_to_business_hours(self, dt: datetime) -> datetime:
+        """
+        Ajusta data/hora para horário comercial (8h-20h).
+
+        Args:
+            dt: Data/hora desejada
+
+        Returns:
+            Data/hora ajustada para horário comercial
+        """
+        # Se for fim de semana, move para segunda-feira
+        if dt.weekday() == 5:  # Sábado
+            dt = dt + timedelta(days=2)
+        elif dt.weekday() == 6:  # Domingo
+            dt = dt + timedelta(days=1)
+
+        # Ajusta horário
+        if dt.hour < 8:
+            # Antes das 8h → move para 8h
+            dt = dt.replace(hour=8, minute=0, second=0, microsecond=0)
+        elif dt.hour >= 20:
+            # Depois das 20h → move para próximo dia às 8h
+            dt = (dt + timedelta(days=1)).replace(hour=8, minute=0, second=0, microsecond=0)
+
+        return dt
+
     def _schedule_send(self, state: FollowupState) -> FollowupState:
         """
-        Node 3: Prepara para envio (simulado por enquanto).
+        Node 3: Prepara para envio com horários comerciais inteligentes.
+
+        Regras de agendamento:
+        - pos_consulta: Próxima manhã às 10h
+        - abandono: Daqui 2 horas
+        - lead_frio: Amanhã às 16h
+        - checagem_retorno: Amanhã às 10h
+        - agendar_consulta: Hoje às 18h
+        - reativacao: Hoje às 18h
+
+        Todas ajustadas para horário comercial (8h-20h, seg-sex).
 
         Args:
             state: Estado atual
@@ -220,25 +256,56 @@ class FollowupAgent:
             Estado atualizado com informações de agendamento
         """
         intent = state["intent"]
+        now = datetime.now()
 
         print(f"📅 Preparando agendamento de envio...")
 
-        # Por enquanto, sempre envia imediatamente
-        # TODO: Integrar com sistema de agendamento real
-        send_at = "now"
+        # Define horário base por intenção
+        if intent == "pos_consulta":
+            # Próxima manhã às 10h
+            send_at = (now + timedelta(days=1)).replace(hour=10, minute=0, second=0, microsecond=0)
 
-        # Para algumas intenções, poderia agendar para horário específico
-        if intent in ["pos_consulta", "checagem_retorno"]:
-            # Poderia agendar para amanhã às 10h, por exemplo
-            # send_at = (datetime.now() + timedelta(days=1)).replace(hour=10).isoformat()
-            pass
+        elif intent == "abandono":
+            # Daqui 2 horas
+            send_at = now + timedelta(hours=2)
 
-        print(f"   ✅ Envio agendado: {send_at}")
+        elif intent == "lead_frio":
+            # Amanhã às 16h
+            send_at = (now + timedelta(days=1)).replace(hour=16, minute=0, second=0, microsecond=0)
+
+        elif intent == "checagem_retorno":
+            # Amanhã às 10h
+            send_at = (now + timedelta(days=1)).replace(hour=10, minute=0, second=0, microsecond=0)
+
+        elif intent == "agendar_consulta":
+            # Hoje às 18h
+            send_at = now.replace(hour=18, minute=0, second=0, microsecond=0)
+            # Se já passou das 18h, move para amanhã
+            if now.hour >= 18:
+                send_at = send_at + timedelta(days=1)
+
+        else:  # reativacao e outros
+            # Hoje às 18h
+            send_at = now.replace(hour=18, minute=0, second=0, microsecond=0)
+            # Se já passou das 18h, move para amanhã
+            if now.hour >= 18:
+                send_at = send_at + timedelta(days=1)
+
+        # Ajusta para horário comercial
+        send_at = self._adjust_to_business_hours(send_at)
+
+        # Verifica se é envio imediato ou agendado
+        is_scheduled = send_at > now
+        send_at_str = send_at.isoformat() if is_scheduled else "now"
+
+        print(f"   ✅ Envio agendado: {send_at_str}")
+        if is_scheduled:
+            print(f"      Agendado para: {send_at.strftime('%d/%m/%Y %H:%M')}")
 
         return {
             **state,
             "ready_for_delivery": True,
-            "send_at": send_at,
+            "send_at": send_at_str,
         }
 
     def _get_system_prompt(self, intent: str) -> str:
