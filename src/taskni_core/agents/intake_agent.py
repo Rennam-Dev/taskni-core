@@ -35,11 +35,10 @@ class IntakeAgent(BaseAgent):
 
     @property
     def llm(self):
-        """Lazy load do LLM."""
+        """Lazy load do LLM multi-provedor com fallback automático."""
         if self._llm is None:
-            from core.llm import get_model
-            from core.settings import settings as core_settings
-            self._llm = get_model(core_settings.DEFAULT_MODEL)
+            from taskni_core.core.llm_provider import MultiProviderLLM
+            self._llm = MultiProviderLLM(enable_streaming=True)
         return self._llm
 
     async def run(self, message: str, context: Dict[str, Any]) -> str:
