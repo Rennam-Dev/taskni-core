@@ -426,23 +426,41 @@ Mensagem:"""
 
     async def run(
         self,
-        patient_name: str,
-        days_inactive: int,
+        patient_name: str = None,
+        days_inactive: int = None,
         last_message: str = "",
         context: dict = None,
+        input_data: 'FollowupInput' = None,
     ) -> dict:
         """
         Executa o agente de followup.
 
         Args:
-            patient_name: Nome do paciente
-            days_inactive: Dias desde último contato
+            patient_name: Nome do paciente (ou use input_data)
+            days_inactive: Dias desde último contato (ou use input_data)
             last_message: Última mensagem do paciente
             context: Contexto adicional
+            input_data: FollowupInput validado (alternativa aos args individuais)
 
         Returns:
             Dict com intent, message, ready_for_delivery, send_at
         """
+        # Suporta tanto input direto quanto FollowupInput
+        if input_data is not None:
+            from taskni_core.schema.agent_inputs import FollowupInput
+            # Valida se é instância de FollowupInput
+            if not isinstance(input_data, FollowupInput):
+                input_data = FollowupInput(**input_data)
+
+            patient_name = input_data.patient_name
+            days_inactive = input_data.days_inactive
+            last_message = input_data.last_message
+            context = input_data.context
+        else:
+            # Validação básica para compatibilidade com código antigo
+            if patient_name is None or days_inactive is None:
+                raise ValueError("patient_name and days_inactive are required")
+
         print(f"\n{'='*80}")
         print(f"🤖 FollowupAgent: Processando followup")
         print(f"{'='*80}")
