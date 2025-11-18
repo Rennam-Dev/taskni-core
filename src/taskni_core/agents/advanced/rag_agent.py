@@ -8,8 +8,10 @@ Usa LangGraph para implementar um workflow de:
 Este é um agente AVANÇADO (usa LangGraph completo).
 """
 
-from typing import List, TypedDict, Annotated, Sequence
+from typing import List, TypedDict, Annotated, Sequence, Dict, Any
 from operator import add
+from collections import OrderedDict
+import hashlib
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
@@ -69,7 +71,8 @@ class FaqRagAgent:
     def __init__(
         self,
         k_documents: int = 4,
-        enable_streaming: bool = True
+        enable_streaming: bool = True,
+        cache_size: int = 50
     ):
         """
         Inicializa o agente RAG.
@@ -77,15 +80,21 @@ class FaqRagAgent:
         Args:
             k_documents: Número de documentos a recuperar
             enable_streaming: Habilitar streaming nas respostas
+            cache_size: Tamanho máximo do cache (default: 50)
         """
         self.k_documents = k_documents
         self.enable_streaming = enable_streaming
+        self.cache_size = cache_size
 
         # Inicializa LLM multi-provider
         self.llm = MultiProviderLLM(enable_streaming=enable_streaming)
 
         # Inicializa pipeline de ingestão/retrieval
         self.ingestion = get_ingestion_pipeline()
+
+        # Cache para respostas (FIFO com OrderedDict)
+        # Estrutura: {cache_key: {"answer": str, "sources": List[str]}}
+        self.cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
 
         # Constrói o grafo LangGraph
         self.graph = self._build_graph()
@@ -235,19 +244,112 @@ Por favor, responda a pergunta baseado no contexto acima. Se a informação não
 
 Responda em {language}."""
 
-    async def run(self, question: str) -> dict:
+    def _get_cache_key(self, question: str) -> str:
         """
-        Executa o agente RAG.
+        Gera chave de cache para uma pergunta.
 
         Args:
             question: Pergunta do usuário
 
         Returns:
-            Dict com answer, sources, retrieved_docs
+            Hash MD5 da pergunta normalizada
+        """
+        # Normaliza a pergunta (lowercase, strip)
+        normalized = question.lower().strip()
+        # Gera hash MD5
+        return hashlib.md5(normalized.encode()).hexdigest()
+
+    def _get_from_cache(self, question: str) -> Dict[str, Any] | None:
+        """
+        Busca resposta no cache.
+
+        Args:
+            question: Pergunta do usuário
+
+        Returns:
+            Dict com answer e sources, ou None se não encontrado
+        """
+        cache_key = self._get_cache_key(question)
+
+        if cache_key in self.cache:
+            # Move para o final (LRU behavior)
+            self.cache.move_to_end(cache_key)
+            print(f"   💾 Resposta encontrada no cache (key: {cache_key[:8]}...)")
+            return self.cache[cache_key]
+
+        return None
+
+    def _save_to_cache(self, question: str, answer: str, sources: List[str]):
+        """
+        Salva resposta no cache.
+
+        Args:
+            question: Pergunta do usuário
+            answer: Resposta gerada
+            sources: Fontes dos documentos
+        """
+        cache_key = self._get_cache_key(question)
+
+        # Se cache está cheio, remove o mais antigo (FIFO)
+        if len(self.cache) >= self.cache_size:
+            # Remove primeiro item (mais antigo)
+            oldest_key = next(iter(self.cache))
+            self.cache.pop(oldest_key)
+            print(f"   🗑️  Cache cheio: removendo entrada antiga")
+
+        # Adiciona ao cache
+        self.cache[cache_key] = {
+            "answer": answer,
+            "sources": sources,
+        }
+
+        print(f"   💾 Resposta salva no cache ({len(self.cache)}/{self.cache_size})")
+
+    def get_cache_stats(self) -> Dict[str, int]:
+        """
+        Retorna estatísticas do cache.
+
+        Returns:
+            Dict com size e capacity
+        """
+        return {
+            "size": len(self.cache),
+            "capacity": self.cache_size,
+        }
+
+    def clear_cache(self):
+        """Limpa todo o cache."""
+        self.cache.clear()
+        print(f"   🗑️  Cache limpo")
+
+    async def run(self, question: str) -> dict:
+        """
+        Executa o agente RAG com cache.
+
+        Args:
+            question: Pergunta do usuário
+
+        Returns:
+            Dict com answer, sources, retrieved_docs, cached
         """
         print(f"\n{'='*80}")
         print(f"🤖 FaqRagAgent: Processando pergunta")
         print(f"{'='*80}")
+
+        # Tenta buscar no cache
+        cached_result = self._get_from_cache(question)
+
+        if cached_result is not None:
+            print(f"{'='*80}\n")
+            return {
+                "answer": cached_result["answer"],
+                "sources": cached_result["sources"],
+                "retrieved_docs": [],  # Não retorna docs do cache
+                "cached": True,
+            }
+
+        # Não está no cache - executa workflow normal
+        print(f"   🔄 Cache miss - executando workflow RAG...")
 
         # Estado inicial
         initial_state = {
@@ -262,6 +364,13 @@ Responda em {language}."""
         # Executa o grafo
         final_state = await self.graph.ainvoke(initial_state)
 
+        # Salva no cache
+        self._save_to_cache(
+            question=question,
+            answer=final_state["answer"],
+            sources=final_state["sources"]
+        )
+
         print(f"{'='*80}\n")
 
         # Retorna resultado
@@ -269,6 +378,7 @@ Responda em {language}."""
             "answer": final_state["answer"],
             "sources": final_state["sources"],
             "retrieved_docs": final_state["retrieved_docs"],
+            "cached": False,
         }
 
     def invoke_sync(self, question: str) -> dict:
