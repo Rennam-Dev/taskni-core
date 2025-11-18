@@ -186,13 +186,20 @@ def register_taskni_agents():
     # Follow-up Agent
     if taskni_settings.ENABLE_FOLLOWUP_AGENT:
         try:
-            from taskni_core.agents.followup_agent import FollowupAgent
+            from taskni_core.agents.advanced.followup_agent import create_followup_agent
+
+            # Cria e registra o agente de Followup
+            followup_agent = create_followup_agent(enable_streaming=False)
 
             agent_registry.register(
-                agent=FollowupAgent(),
+                agent=followup_agent,
+                agent_id=followup_agent.id,
+                name=followup_agent.name,
+                description=followup_agent.description,
                 enabled=True,
             )
-        except ImportError:
+        except ImportError as e:
+            print(f"⚠️  Não foi possível carregar FollowupAgent: {e}")
             pass  # Agente ainda não implementado
 
     # Billing Agent
