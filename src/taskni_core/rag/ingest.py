@@ -25,6 +25,13 @@ from langchain_community.embeddings import FakeEmbeddings
 
 from core.settings import settings
 
+# Para detecção de firewall
+try:
+    import httpx
+    HTTPX_AVAILABLE = True
+except ImportError:
+    HTTPX_AVAILABLE = False
+
 
 class DocumentIngestion:
     """
@@ -72,32 +79,67 @@ class DocumentIngestion:
         # Inicializa vector store
         self.vectorstore = self._get_vectorstore()
 
+    def _is_firewalled(self) -> bool:
+        """
+        Detecta se o ambiente está atrás de firewall/proxy.
+
+        Tenta acessar a API da OpenAI para verificar conectividade.
+
+        Returns:
+            True se está bloqueado, False se tem acesso
+        """
+        if not HTTPX_AVAILABLE:
+            # Se httpx não está disponível, assume que está bloqueado
+            return True
+
+        try:
+            # Tenta acessar endpoint da OpenAI com timeout curto
+            with httpx.Client(timeout=2.0) as client:
+                response = client.get("https://api.openai.com/v1/models")
+                # Se chegou aqui, não está bloqueado
+                return False
+        except Exception:
+            # Qualquer erro (timeout, connection, SSL, etc) = bloqueado
+            return True
+
     def _get_embeddings(self):
         """
-        Retorna embeddings configurados.
+        Retorna embeddings configurados com detecção automática de firewall.
 
         Prioridade:
-        1. OpenAI (se disponível e ambiente permite)
-        2. FakeEmbeddings (desenvolvimento ou quando há restrições de rede)
+        1. OpenAI (se chave existe E ambiente não está bloqueado)
+        2. FakeEmbeddings (desenvolvimento ou quando há restrições)
+
+        Returns:
+            Instância de embeddings configurada
         """
-        # Por enquanto, sempre usa FakeEmbeddings para evitar problemas de rede
-        # TODO: Implementar detecção automática de ambiente ou usar variável de ambiente
+        # Verifica se tem API key da OpenAI
+        if settings.OPENAI_API_KEY:
+            # Detecta se ambiente está bloqueado
+            is_blocked = self._is_firewalled()
+
+            if not is_blocked:
+                # Ambiente OK - usa OpenAI
+                try:
+                    print("✅ Usando OpenAI Embeddings (text-embedding-3-small)")
+                    return OpenAIEmbeddings(
+                        api_key=settings.OPENAI_API_KEY.get_secret_value(),
+                        model="text-embedding-3-small",  # Mais barato
+                    )
+                except Exception as e:
+                    print(f"⚠️  OpenAI Embeddings falhou: {e}")
+                    print("📝 Fallback para FakeEmbeddings")
+                    return FakeEmbeddings(size=1536)
+            else:
+                # Ambiente bloqueado
+                print("⚠️  Firewall/proxy detectado - acesso à OpenAI bloqueado")
+                print("📝 Usando FakeEmbeddings (desenvolvimento)")
+                return FakeEmbeddings(size=1536)
+
+        # Sem API key
+        print("⚠️  OPENAI_API_KEY não configurada")
         print("📝 Usando FakeEmbeddings (desenvolvimento)")
         return FakeEmbeddings(size=1536)
-
-        # Código comentado para quando o ambiente permitir acesso externo:
-        # if settings.OPENAI_API_KEY:
-        #     try:
-        #         return OpenAIEmbeddings(
-        #             api_key=settings.OPENAI_API_KEY.get_secret_value(),
-        #             model="text-embedding-3-small",  # Mais barato
-        #         )
-        #     except Exception as e:
-        #         print(f"⚠️  OpenAI Embeddings falhou: {e}")
-        #
-        # # Fallback para FakeEmbeddings
-        # print("⚠️  Usando FakeEmbeddings (desenvolvimento)")
-        # return FakeEmbeddings(size=1536)
 
     def _get_vectorstore(self) -> Chroma:
         """Inicializa ou carrega o vector store ChromaDB."""
