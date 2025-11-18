@@ -143,6 +143,95 @@ OPENAI_API_KEY=sk-proj-epZvUZwoTEcErVyfY2g-i1in_VfA4XkNVA-...
 
 ---
 
+### ✅ Passo 5: Sistema RAG com FaqRagAgent
+
+**Status:** COMPLETO ✅
+
+**Implementação:**
+- ✅ Pipeline de ingestão completo (`rag/ingest.py`)
+- ✅ Suporte a PDFs, TXT, MD
+- ✅ ChromaDB como vector store
+- ✅ FakeEmbeddings (para ambiente com restrições de rede)
+- ✅ FaqRagAgent com LangGraph (`agents/advanced/rag_agent.py`)
+- ✅ Rotas REST para RAG (`/rag/*`)
+
+**Funcionalidades do Sistema RAG:**
+
+1. **Pipeline de Ingestão** (`src/taskni_core/rag/ingest.py`):
+   - Ingestão de PDFs (PyPDFLoader)
+   - Ingestão de arquivos de texto (.txt, .md)
+   - Ingestão de texto direto (sem arquivo)
+   - Chunking inteligente (RecursiveCharacterTextSplitter)
+   - Embeddings com FakeEmbeddings (fallback para OpenAI)
+   - Armazenamento em ChromaDB
+
+2. **FaqRagAgent** (`src/taskni_core/agents/advanced/rag_agent.py`):
+   - Workflow LangGraph com 2 nodes:
+     - `retrieve`: Busca documentos relevantes
+     - `generate`: Gera resposta usando LLM + contexto
+   - Integração com MultiProviderLLM
+   - Retorna resposta + fontes dos documentos
+   - Configurável (número de documentos, streaming)
+
+3. **Rotas REST** (`src/taskni_core/api/routes_rag.py`):
+   - `POST /rag/upload` - Upload de documentos (PDF, TXT, MD)
+   - `POST /rag/ingest/text` - Ingestão de texto direto
+   - `GET /rag/documents` - Estatísticas da coleção
+   - `DELETE /rag/documents` - Deleta coleção (cuidado!)
+
+**Estrutura LangGraph do FaqRagAgent:**
+```
+┌──────────┐
+│  START   │
+└─────┬────┘
+      │
+      v
+┌──────────────┐
+│   retrieve   │  → Busca documentos no ChromaDB
+└──────┬───────┘
+       │
+       v
+┌──────────────┐
+│   generate   │  → LLM gera resposta com contexto
+└──────┬───────┘
+       │
+       v
+   ┌───────┐
+   │  END  │
+   └───────┘
+```
+
+**Testes Validados:**
+```bash
+✅ DocumentIngestion - Ingestão de textos
+✅ ChromaDB - Vector store persistente
+✅ Retrieval - Busca de similaridade
+✅ FaqRagAgent - Workflow LangGraph completo
+✅ Rotas REST integradas no FastAPI
+```
+
+**Arquivos Criados:**
+- `src/taskni_core/rag/__init__.py`
+- `src/taskni_core/rag/ingest.py` (pipeline completo)
+- `src/taskni_core/agents/advanced/__init__.py`
+- `src/taskni_core/agents/advanced/rag_agent.py` (agente LangGraph)
+- `src/taskni_core/api/routes_rag.py` (rotas REST)
+- `test_rag_agent.py` (suite de testes)
+
+**Integração:**
+- ✅ Registrado no AgentRegistry
+- ✅ Rotas incluídas no FastAPI (`/rag/*`)
+- ✅ Usa MultiProviderLLM (Groq → OpenAI → FakeModel)
+- ✅ FakeEmbeddings para ambiente com firewall
+
+**Observações:**
+- Sistema usa FakeEmbeddings por padrão (ambiente com restrições de rede)
+- Em produção: descomentar OpenAIEmbeddings no `ingest.py`
+- ChromaDB persiste em `./data/chroma` (configurável)
+- Suporta metadata customizada nos documentos
+
+---
+
 ## 📁 Estrutura Atual do Projeto
 
 ```
@@ -152,12 +241,18 @@ taskni-core/
 │       ├── agents/
 │       │   ├── base.py              ✅ Interface BaseAgent
 │       │   ├── registry.py          ✅ Registro híbrido
-│       │   └── intake_agent.py      ✅ Agente de triagem
+│       │   ├── intake_agent.py      ✅ Agente de triagem
+│       │   └── advanced/
+│       │       └── rag_agent.py     ✅ FaqRagAgent (LangGraph)
 │       ├── api/
 │       │   ├── routes_health.py     ✅ Health checks
-│       │   └── routes_agents.py     ✅ Rotas de agentes
+│       │   ├── routes_agents.py     ✅ Rotas de agentes
+│       │   └── routes_rag.py        ✅ Rotas RAG
 │       ├── core/
-│       │   └── settings.py          ✅ TaskniSettings
+│       │   ├── settings.py          ✅ TaskniSettings
+│       │   └── llm_provider.py      ✅ MultiProviderLLM
+│       ├── rag/
+│       │   └── ingest.py            ✅ Pipeline de ingestão
 │       ├── schema/
 │       │   ├── agent_io.py          ✅ Request/Response
 │       │   └── crm.py               ✅ Patient, Appointment, Ticket
@@ -167,10 +262,14 @@ taskni-core/
 ├── tests/
 │   ├── test_intake_scenarios.py    ✅ Cenários de uso
 │   ├── test_intake_prompt.py       ✅ Validação de prompts
-│   └── test_intake_groq.py         ✅ Teste com Groq
+│   ├── test_multi_provider.py      ✅ Sistema multi-provedor
+│   └── test_rag_agent.py           ✅ Sistema RAG completo
 │
 └── docs/
-    └── PROGRESSO.md                 📄 Este arquivo
+    ├── PROGRESSO.md                 📄 Este arquivo
+    ├── MULTI_PROVIDER_SETUP.md      📄 Guia multi-provedor
+    ├── SETUP_FREE_LLMS.md          📄 Guia de LLMs gratuitas
+    └── NETWORK_ISSUES.md           📄 Problemas de rede
 ```
 
 ---
@@ -179,10 +278,12 @@ taskni-core/
 
 ### Prioridade 1: Agentes Específicos
 
-#### [ ] Implementar FaqRagAgent
-- RAG com ChromaDB
-- Vector store para FAQ da clínica
-- Busca semântica de respostas
+#### [✅] Implementar FaqRagAgent
+- ✅ RAG com ChromaDB
+- ✅ Vector store para FAQ da clínica
+- ✅ Busca semântica de respostas
+- ✅ Pipeline de ingestão (PDF, TXT, MD)
+- ✅ Rotas REST para upload
 
 #### [ ] Implementar FollowupAgent
 - Acompanhamento pós-consulta

@@ -212,6 +212,34 @@ class MultiProviderLLM:
             f"Todos os provedores falharam no streaming:\n{error_summary}"
         )
 
+    def invoke_sync(
+        self,
+        messages: List[BaseMessage] | List[Dict[str, str]],
+        **kwargs
+    ) -> str:
+        """
+        Versão síncrona do ainvoke.
+
+        Args:
+            messages: Mensagens para enviar ao LLM
+            **kwargs: Argumentos adicionais
+
+        Returns:
+            Conteúdo da resposta como string
+
+        Raises:
+            Exception: Se todos os provedores falharem
+        """
+        import asyncio
+
+        # Executa ainvoke de forma síncrona
+        response = asyncio.run(self.ainvoke(messages, **kwargs))
+
+        # Extrai conteúdo
+        if hasattr(response, "content"):
+            return response.content
+        return str(response)
+
     def get_current_provider(self) -> str:
         """Retorna o nome do provider atual."""
         if self._providers:

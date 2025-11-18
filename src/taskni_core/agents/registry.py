@@ -167,13 +167,20 @@ def register_taskni_agents():
     # FAQ Agent (RAG)
     if taskni_settings.ENABLE_FAQ_AGENT:
         try:
-            from taskni_core.agents.faq_rag_agent import FaqRagAgent
+            from taskni_core.agents.advanced.rag_agent import create_faq_rag_agent
+
+            # Cria e registra o agente RAG
+            faq_agent = create_faq_rag_agent(k_documents=4, enable_streaming=True)
 
             agent_registry.register(
-                agent=FaqRagAgent(),
+                agent=faq_agent,
+                agent_id=faq_agent.id,
+                name=faq_agent.name,
+                description=faq_agent.description,
                 enabled=True,
             )
-        except ImportError:
+        except ImportError as e:
+            print(f"⚠️  Não foi possível carregar FaqRagAgent: {e}")
             pass  # Agente ainda não implementado
 
     # Follow-up Agent

@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from taskni_core.agents.registry import register_taskni_agents
 from taskni_core.api.routes_agents import router as agents_router
 from taskni_core.api.routes_health import router as health_router
+from taskni_core.api.routes_rag import router as rag_router
 from taskni_core.core.settings import taskni_settings
 
 
@@ -72,6 +73,12 @@ def create_app() -> FastAPI:
         agents_router,
         prefix="/agents",
         tags=["agents"],
+    )
+
+    app.include_router(
+        rag_router,
+        prefix="/rag",
+        tags=["rag"],
     )
 
     # TODO: Adicionar rotas de CRM quando implementar
