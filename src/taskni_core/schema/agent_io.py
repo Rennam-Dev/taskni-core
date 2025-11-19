@@ -9,6 +9,8 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
+from taskni_core.schema.metadata_schemas import RequestMetadata, ResponseMetadata
+
 
 class AgentInvokeRequest(BaseModel):
     """
@@ -24,9 +26,9 @@ class AgentInvokeRequest(BaseModel):
     thread_id: Optional[str] = Field(
         None, description="ID do thread (para continuidade de conversas)"
     )
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Metadados adicionais (source, channel, etc)",
+    metadata: RequestMetadata = Field(
+        default_factory=RequestMetadata,
+        description="Metadados validados (source, phone, email, etc)",
     )
 
     model_config = {"json_schema_extra": {"example": {
@@ -52,9 +54,9 @@ class AgentInvokeResponse(BaseModel):
     reply: str = Field(..., description="Resposta do agente")
     session_id: Optional[str] = Field(None, description="ID da sessão")
     thread_id: Optional[str] = Field(None, description="ID do thread")
-    metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Metadados da resposta (tokens usados, tempo, etc)",
+    metadata: ResponseMetadata = Field(
+        default_factory=ResponseMetadata,
+        description="Metadados validados (tokens, tempo, modelo usado, etc)",
     )
     timestamp: datetime = Field(
         default_factory=datetime.now,
@@ -87,7 +89,10 @@ class AgentStreamRequest(BaseModel):
     user_id: Optional[str] = Field(None, description="ID do usuário/paciente")
     session_id: Optional[str] = Field(None, description="ID da sessão/conversa")
     thread_id: Optional[str] = Field(None, description="ID do thread")
-    metadata: Dict[str, Any] = Field(default_factory=dict)
+    metadata: RequestMetadata = Field(
+        default_factory=RequestMetadata,
+        description="Metadados validados"
+    )
 
 
 class AgentListItem(BaseModel):

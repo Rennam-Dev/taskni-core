@@ -65,11 +65,12 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
         raise HTTPException(status_code=404, detail=str(e))
 
     # Prepara o contexto
+    # Converte metadata tipado para dicionário (compatibilidade com agentes)
     context = {
         "user_id": payload.user_id,
         "session_id": payload.session_id,
         "thread_id": payload.thread_id,
-        "metadata": payload.metadata,
+        "metadata": payload.metadata.model_dump(exclude_none=True),
     }
 
     try:
@@ -88,12 +89,14 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
                 context=context,
             )
 
+        # Cria resposta com metadata vazio (pode ser populado depois)
+        from taskni_core.schema.metadata_schemas import ResponseMetadata
         return AgentInvokeResponse(
             agent_id=payload.agent_id,
             reply=reply,
             session_id=payload.session_id,
             thread_id=payload.thread_id,
-            metadata={},
+            metadata=ResponseMetadata(),
         )
 
     except Exception as e:

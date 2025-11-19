@@ -20,6 +20,7 @@ from slowapi.util import get_remote_address
 
 from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.utils.error_handler import safe_str_exception
+from taskni_core.schema.metadata_schemas import DocumentMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -40,14 +41,17 @@ limiter = Limiter(key_func=get_remote_address)
 class IngestTextRequest(BaseModel):
     """Request para ingestão de texto direto."""
     text: str
-    metadata: Optional[dict] = None
+    metadata: DocumentMetadata = Field(
+        default_factory=DocumentMetadata,
+        description="Metadados validados do documento"
+    )
 
 
 class IngestTextResponse(BaseModel):
     """Response da ingestão de texto."""
     message: str
     chunks_count: int
-    metadata: dict
+    metadata: DocumentMetadata
 
 
 class UploadResponse(BaseModel):
@@ -175,16 +179,19 @@ async def ingest_text(request: Request, payload: IngestTextRequest):
     # Pipeline de ingestão
     pipeline = get_ingestion_pipeline()
 
+    # Converte metadata tipado para dicionário
+    metadata_dict = payload.metadata.model_dump(exclude_none=True)
+
     # Ingere texto
     chunks_count = pipeline.ingest_text_direct(
         text=payload.text,
-        metadata=payload.metadata or {}
+        metadata=metadata_dict
     )
 
     return IngestTextResponse(
         message="Texto ingerido com sucesso",
         chunks_count=chunks_count,
-        metadata=payload.metadata or {},
+        metadata=payload.metadata,
     )
 
 
