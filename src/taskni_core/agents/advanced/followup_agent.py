@@ -16,6 +16,7 @@ from langgraph.graph import StateGraph, END
 
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.security import sanitize_prompt_input
 
 
 # ============================================================================
@@ -394,7 +395,7 @@ EXEMPLO: "Oi [nome]! Que tal um check-up? Cuidar da saúde preventivamente é se
         context: dict
     ) -> str:
         """
-        Constrói o prompt do usuário.
+        Constrói o prompt do usuário com sanitização de inputs.
 
         Args:
             patient_name: Nome do paciente
@@ -403,11 +404,23 @@ EXEMPLO: "Oi [nome]! Que tal um check-up? Cuidar da saúde preventivamente é se
             context: Contexto adicional
 
         Returns:
-            Prompt formatado
+            Prompt formatado e sanitizado
         """
-        clinic_type = context.get("clinic_type", "clínica")
-        service = context.get("service", "atendimento")
-        tone = context.get("tone", "amigável")
+        # SANITIZA TODOS OS INPUTS PARA PREVENIR PROMPT INJECTION
+        patient_name = sanitize_prompt_input(patient_name, max_length=200)
+        intent = sanitize_prompt_input(intent, max_length=50)
+        clinic_type = sanitize_prompt_input(
+            context.get("clinic_type", "clínica"),
+            max_length=100
+        )
+        service = sanitize_prompt_input(
+            context.get("service", "atendimento"),
+            max_length=100
+        )
+        tone = sanitize_prompt_input(
+            context.get("tone", "amigável"),
+            max_length=50
+        )
 
         prompt = f"""Crie uma mensagem de followup para:
 

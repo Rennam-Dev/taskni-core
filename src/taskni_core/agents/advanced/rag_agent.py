@@ -21,6 +21,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.security import sanitize_prompt_input
 
 
 # ============================================================================
@@ -324,7 +325,7 @@ Responda em {language}."""
 
     async def run(self, question: str) -> dict:
         """
-        Executa o agente RAG com cache.
+        Executa o agente RAG com cache e sanitização de input.
 
         Args:
             question: Pergunta do usuário
@@ -335,6 +336,10 @@ Responda em {language}."""
         print(f"\n{'='*80}")
         print(f"🤖 FaqRagAgent: Processando pergunta")
         print(f"{'='*80}")
+
+        # SANITIZA O INPUT PARA PREVENIR PROMPT INJECTION
+        # Permite quebras de linha pois perguntas podem ser multilinhas
+        question = sanitize_prompt_input(question, max_length=500, allow_multiline=True)
 
         # Tenta buscar no cache
         cached_result = self._get_from_cache(question)

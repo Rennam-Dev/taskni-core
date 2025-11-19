@@ -25,6 +25,7 @@ from langchain_community.embeddings import FakeEmbeddings, OllamaEmbeddings
 
 from core.settings import settings
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.security import sanitize_rag_filter
 
 # Para detecção de firewall
 try:
@@ -328,16 +329,20 @@ class DocumentIngestion:
         filter: Optional[Dict[str, Any]] = None
     ) -> List[Document]:
         """
-        Busca documentos similares.
+        Busca documentos similares com sanitização de filtros.
 
         Args:
             query: Texto de busca
             k: Número de documentos a retornar
-            filter: Filtros de metadata
+            filter: Filtros de metadata (será sanitizado)
 
         Returns:
             Lista de documentos mais relevantes
         """
+        # SANITIZA FILTROS PARA PREVENIR SQL/NoSQL INJECTION
+        if filter is not None:
+            filter = sanitize_rag_filter(filter)
+
         results = self.vectorstore.similarity_search(
             query,
             k=k,

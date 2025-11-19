@@ -115,15 +115,17 @@ class MultiProviderLLM:
     async def ainvoke(
         self,
         messages: List[BaseMessage] | List[Dict[str, str]],
+        timeout: float = 30.0,
         **kwargs
     ) -> Any:
         """
-        Invoca o LLM com fallback automático.
+        Invoca o LLM com fallback automático e timeout.
 
         Tenta os provedores em ordem de prioridade até um funcionar.
 
         Args:
             messages: Mensagens para enviar ao LLM
+            timeout: Timeout em segundos (padrão: 30s)
             **kwargs: Argumentos adicionais
 
         Returns:
@@ -132,6 +134,8 @@ class MultiProviderLLM:
         Raises:
             Exception: Se todos os provedores falharem
         """
+        import asyncio
+
         errors = []
 
         for provider_info in self._providers:
@@ -139,11 +143,21 @@ class MultiProviderLLM:
                 logger.info(f"🔄 Tentando provider: {provider_info['name']}")
 
                 llm = self._get_llm(provider_info)
-                response = await llm.ainvoke(messages, **kwargs)
+
+                # Adiciona timeout de 30 segundos para evitar hang
+                response = await asyncio.wait_for(
+                    llm.ainvoke(messages, **kwargs),
+                    timeout=timeout
+                )
 
                 logger.info(f"✅ {provider_info['name']} respondeu com sucesso")
                 return response
 
+            except asyncio.TimeoutError:
+                error_msg = f"{provider_info['name']}: Timeout após {timeout}s"
+                logger.warning(f"⚠️  {error_msg}")
+                errors.append(error_msg)
+                continue
             except Exception as e:
                 error_msg = f"{provider_info['name']}: {str(e)[:100]}"
                 logger.warning(f"⚠️  {error_msg}")
@@ -159,13 +173,15 @@ class MultiProviderLLM:
     async def astream(
         self,
         messages: List[BaseMessage] | List[Dict[str, str]],
+        timeout: float = 60.0,
         **kwargs
     ):
         """
-        Stream de respostas do LLM com fallback automático.
+        Stream de respostas do LLM com fallback automático e timeout.
 
         Args:
             messages: Mensagens para enviar ao LLM
+            timeout: Timeout total em segundos (padrão: 60s para streaming)
             **kwargs: Argumentos adicionais
 
         Yields:
@@ -174,9 +190,11 @@ class MultiProviderLLM:
         Raises:
             Exception: Se todos os provedores falharem
         """
+        import asyncio
+
         if not self.enable_streaming:
             # Fallback para invoke se streaming desabilitado
-            response = await self.ainvoke(messages, **kwargs)
+            response = await self.ainvoke(messages, timeout=timeout, **kwargs)
             if hasattr(response, "content"):
                 yield response.content
             else:
@@ -191,15 +209,28 @@ class MultiProviderLLM:
 
                 llm = self._get_llm(provider_info)
 
-                async for chunk in llm.astream(messages, **kwargs):
-                    if hasattr(chunk, "content"):
-                        yield chunk.content
-                    else:
-                        yield str(chunk)
+                # Timeout para o stream completo
+                async def stream_with_timeout():
+                    async for chunk in llm.astream(messages, **kwargs):
+                        if hasattr(chunk, "content"):
+                            yield chunk.content
+                        else:
+                            yield str(chunk)
+
+                async for chunk in asyncio.wait_for(
+                    stream_with_timeout(),
+                    timeout=timeout
+                ):
+                    yield chunk
 
                 logger.info(f"✅ {provider_info['name']} stream concluído")
                 return  # Stream bem-sucedido, sai da função
 
+            except asyncio.TimeoutError:
+                error_msg = f"{provider_info['name']}: Stream timeout após {timeout}s"
+                logger.warning(f"⚠️  {error_msg}")
+                errors.append(error_msg)
+                continue
             except Exception as e:
                 error_msg = f"{provider_info['name']}: {str(e)[:100]}"
                 logger.warning(f"⚠️  {error_msg}")
