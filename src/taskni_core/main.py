@@ -25,12 +25,19 @@ from taskni_core.utils.error_handler import (
     validation_exception_handler,
     generic_exception_handler,
 )
+from taskni_core.utils.auth import AuthManager
 
 logger = logging.getLogger(__name__)
 
 # Inicializa o rate limiter
 # Usa IP do cliente como chave para limitar requests por IP
 limiter = Limiter(key_func=get_remote_address)
+
+# Inicializa o gerenciador de autenticação
+# Obtém tokens do .env de forma segura
+api_token = taskni_settings.API_TOKEN.get_secret_value() if taskni_settings.API_TOKEN else None
+api_tokens = taskni_settings.API_TOKENS.get_secret_value() if taskni_settings.API_TOKENS else None
+auth_manager = AuthManager(api_token=api_token, api_tokens=api_tokens)
 
 
 @asynccontextmanager
@@ -115,23 +122,34 @@ def create_app() -> FastAPI:
         max_age=3600,
     )
 
+    # Disponibiliza auth_manager para os routers
+    # Pode ser acessado via request.app.state.auth
+    app.state.auth = auth_manager
+
     # Inclui as rotas do Taskni Core
+    # /health é público (para health checks de load balancers)
     app.include_router(
         health_router,
         prefix="/health",
         tags=["health"],
     )
 
+    # /agents e /rag são protegidos (requerem Bearer token se configurado)
+    from fastapi import Depends
+    auth_dependency = [Depends(auth_manager.require_auth)]
+
     app.include_router(
         agents_router,
         prefix="/agents",
         tags=["agents"],
+        dependencies=auth_dependency,  # Protege todos os endpoints
     )
 
     app.include_router(
         rag_router,
         prefix="/rag",
         tags=["rag"],
+        dependencies=auth_dependency,  # Protege todos os endpoints
     )
 
     # TODO: Adicionar rotas de CRM quando implementar
