@@ -91,6 +91,14 @@ class TaskniSettings(BaseSettings):
     FAQ_VECTOR_STORE_PATH: str | None = None
     FAQ_COLLECTION_NAME: str = "clinic_faq"
 
+    # ==========================================
+    # Ollama (embeddings apenas)
+    # ==========================================
+    # Ollama é usado apenas para EMBEDDINGS
+    # LLM de geração usa Groq → OpenAI → FakeModel
+    OLLAMA_BASE_URL: str | None = None
+    OLLAMA_EMBED_MODEL: str = "nomic-embed-text"
+
     def is_dev(self) -> bool:
         """Check if running in development mode."""
         return self.MODE == "dev"

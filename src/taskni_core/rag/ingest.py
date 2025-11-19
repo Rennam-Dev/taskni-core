@@ -21,9 +21,10 @@ from langchain_core.documents import Document
 
 # Embeddings
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.embeddings import FakeEmbeddings
+from langchain_community.embeddings import FakeEmbeddings, OllamaEmbeddings
 
 from core.settings import settings
+from taskni_core.core.settings import taskni_settings
 
 # Para detecção de firewall
 try:
@@ -79,6 +80,29 @@ class DocumentIngestion:
         # Inicializa vector store
         self.vectorstore = self._get_vectorstore()
 
+    def _is_ollama_available(self) -> bool:
+        """
+        Detecta se o Ollama está disponível e acessível.
+
+        Returns:
+            True se Ollama está acessível, False caso contrário
+        """
+        if not taskni_settings.OLLAMA_BASE_URL:
+            return False
+
+        if not HTTPX_AVAILABLE:
+            return False
+
+        try:
+            # Tenta acessar o endpoint /api/tags do Ollama
+            base_url = taskni_settings.OLLAMA_BASE_URL.rstrip('/')
+            with httpx.Client(timeout=3.0, verify=False) as client:  # verify=False para HTTPS auto-assinado
+                response = client.get(f"{base_url}/api/tags")
+                return response.status_code == 200
+        except Exception as e:
+            print(f"⚠️  Ollama não acessível: {e}")
+            return False
+
     def _is_firewalled(self) -> bool:
         """
         Detecta se o ambiente está atrás de firewall/proxy.
@@ -104,16 +128,34 @@ class DocumentIngestion:
 
     def _get_embeddings(self):
         """
-        Retorna embeddings configurados com detecção automática de firewall.
+        Retorna embeddings configurados com detecção automática.
 
         Prioridade:
-        1. OpenAI (se chave existe E ambiente não está bloqueado)
-        2. FakeEmbeddings (desenvolvimento ou quando há restrições)
+        1. Ollama (se configurado e acessível) - RECOMENDADO para produção
+        2. OpenAI (se chave existe E ambiente não está bloqueado)
+        3. FakeEmbeddings (desenvolvimento ou quando há restrições)
 
         Returns:
             Instância de embeddings configurada
         """
-        # Verifica se tem API key da OpenAI
+        # 1. PRIORIDADE: Ollama (embeddings locais/self-hosted)
+        if taskni_settings.OLLAMA_BASE_URL:
+            if self._is_ollama_available():
+                try:
+                    print(f"✅ Usando Ollama Embeddings ({taskni_settings.OLLAMA_EMBED_MODEL})")
+                    print(f"   Endpoint: {taskni_settings.OLLAMA_BASE_URL}")
+                    return OllamaEmbeddings(
+                        base_url=taskni_settings.OLLAMA_BASE_URL,
+                        model=taskni_settings.OLLAMA_EMBED_MODEL,
+                    )
+                except Exception as e:
+                    print(f"⚠️  Ollama Embeddings falhou: {e}")
+                    print("📝 Tentando fallback...")
+            else:
+                print(f"⚠️  Ollama não está acessível em {taskni_settings.OLLAMA_BASE_URL}")
+                print("📝 Tentando fallback...")
+
+        # 2. FALLBACK 1: OpenAI (se chave existe)
         if settings.OPENAI_API_KEY:
             # Detecta se ambiente está bloqueado
             is_blocked = self._is_firewalled()
@@ -129,17 +171,17 @@ class DocumentIngestion:
                 except Exception as e:
                     print(f"⚠️  OpenAI Embeddings falhou: {e}")
                     print("📝 Fallback para FakeEmbeddings")
-                    return FakeEmbeddings(size=1536)
+                    return FakeEmbeddings(size=768)  # nomic-embed-text usa 768 dims
             else:
                 # Ambiente bloqueado
                 print("⚠️  Firewall/proxy detectado - acesso à OpenAI bloqueado")
                 print("📝 Usando FakeEmbeddings (desenvolvimento)")
-                return FakeEmbeddings(size=1536)
+                return FakeEmbeddings(size=768)
 
-        # Sem API key
-        print("⚠️  OPENAI_API_KEY não configurada")
+        # 3. FALLBACK FINAL: FakeEmbeddings
+        print("⚠️  Nenhum provedor de embeddings disponível")
         print("📝 Usando FakeEmbeddings (desenvolvimento)")
-        return FakeEmbeddings(size=1536)
+        return FakeEmbeddings(size=768)
 
     def _get_vectorstore(self) -> Chroma:
         """Inicializa ou carrega o vector store ChromaDB."""
