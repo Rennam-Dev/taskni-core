@@ -8,6 +8,7 @@ Endpoints:
 - DELETE /rag/documents - Deleta coleção (cuidado!)
 """
 
+import logging
 import os
 import tempfile
 from typing import Optional
@@ -18,7 +19,9 @@ from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from taskni_core.rag.ingest import get_ingestion_pipeline
+from taskni_core.utils.error_handler import safe_str_exception
 
+logger = logging.getLogger(__name__)
 
 # ============================================================================
 # Router

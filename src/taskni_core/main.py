@@ -9,6 +9,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -18,6 +20,11 @@ from taskni_core.api.routes_agents import router as agents_router
 from taskni_core.api.routes_health import router as health_router
 from taskni_core.api.routes_rag import router as rag_router
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.error_handler import (
+    http_exception_handler,
+    validation_exception_handler,
+    generic_exception_handler,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +74,13 @@ def create_app() -> FastAPI:
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
     logger.info("✅ Rate limiting configurado")
+
+    # Configura Exception Handlers (previne exposição de erros internos)
+    # IMPORTANTE: A ordem importa! Handlers mais específicos primeiro.
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(StarletteHTTPException, http_exception_handler)
+    app.add_exception_handler(Exception, generic_exception_handler)  # Catch-all
+    logger.info("✅ Exception handlers configurados (erros internos protegidos)")
 
     # Configuração CORS segura
     # IMPORTANTE: allow_origins=["*"] com allow_credentials=True é MUITO PERIGOSO!

@@ -4,6 +4,7 @@ Rotas para agentes.
 Endpoints para listar, invocar e fazer stream de agentes.
 """
 
+import logging
 from typing import Any, Dict
 
 from fastapi import APIRouter, HTTPException, Request
@@ -18,6 +19,9 @@ from taskni_core.schema.agent_io import (
     AgentInvokeResponse,
     AgentListItem,
 )
+from taskni_core.utils.error_handler import safe_str_exception
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -93,9 +97,19 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
         )
 
     except Exception as e:
+        # Loga detalhes internos NO SERVIDOR (não expõe ao cliente)
+        logger.error(
+            f"Erro ao executar agente {payload.agent_id}: {safe_str_exception(e)}",
+            extra={
+                "agent_id": payload.agent_id,
+                "user_id": payload.user_id,
+                "error_type": e.__class__.__name__,
+            }
+        )
+        # Retorna mensagem genérica ao cliente (sem detalhes internos)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao executar agente: {str(e)}",
+            detail="Erro ao executar agente. Nossa equipe foi notificada.",
         )
 
 
