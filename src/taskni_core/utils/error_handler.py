@@ -220,14 +220,19 @@ def safe_str_exception(exc: Exception, max_length: int = 200) -> str:
     Returns:
         String segura da exceção
     """
-    exc_type = exc.__class__.__name__
+    import re
 
-    # Remove caminhos de arquivo internos
+    exc_type = exc.__class__.__name__
     exc_str = str(exc)
-    if "File " in exc_str:
-        # Remove paths como: File "/usr/local/lib/python3.11/..."
-        import re
-        exc_str = re.sub(r'File ".*?"', 'File "<internal>"', exc_str)
+
+    # Remove paths de arquivo (stacktrace format): File "/path/to/file.py"
+    exc_str = re.sub(r'File ".*?"', 'File "<internal>"', exc_str)
+
+    # Remove paths absolutos Unix/Linux: /home/user/... ou /usr/local/...
+    exc_str = re.sub(r'/[\w\-./]+', '<path>', exc_str)
+
+    # Remove paths absolutos Windows: C:\Users\... ou C:/Users/...
+    exc_str = re.sub(r'[A-Za-z]:[/\\][\w\-./\\]+', '<path>', exc_str)
 
     # Limita tamanho
     if len(exc_str) > max_length:
