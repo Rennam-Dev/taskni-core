@@ -712,7 +712,7 @@ curl -X POST http://localhost:8080/agents/invoke \
 
 **Data:** 2025-11-19
 **Status:** ✅ IMPLEMENTADO
-**Commit:** `<será adicionado>`
+**Commit:** `cbc7836`
 
 ### 🎯 Objetivo
 
