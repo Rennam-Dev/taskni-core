@@ -73,7 +73,12 @@ def get_model(model_name: AllModelEnum, /) -> ModelT:
         raise ValueError(f"Unsupported model: {model_name}")
 
     if model_name in OpenAIModelName:
-        return ChatOpenAI(model=api_model_name, temperature=0.5, streaming=True)
+        return ChatOpenAI(
+            model=api_model_name,
+            temperature=0.5,
+            streaming=True,
+            api_key=settings.OPENAI_API_KEY.get_secret_value() if settings.OPENAI_API_KEY else None,
+        )
     if model_name in OpenAICompatibleName:
         if not settings.COMPATIBLE_BASE_URL or not settings.COMPATIBLE_MODEL:
             raise ValueError("OpenAICompatible base url and endpoint must be configured")
@@ -114,8 +119,16 @@ def get_model(model_name: AllModelEnum, /) -> ModelT:
         return ChatVertexAI(model=api_model_name, temperature=0.5, streaming=True)
     if model_name in GroqModelName:
         if model_name == GroqModelName.LLAMA_GUARD_4_12B:
-            return ChatGroq(model=api_model_name, temperature=0.0)  # type: ignore[call-arg]
-        return ChatGroq(model=api_model_name, temperature=0.5)  # type: ignore[call-arg]
+            return ChatGroq(
+                model=api_model_name,
+                temperature=0.0,
+                api_key=settings.GROQ_API_KEY.get_secret_value() if settings.GROQ_API_KEY else None,
+            )  # type: ignore[call-arg]
+        return ChatGroq(
+            model=api_model_name,
+            temperature=0.5,
+            api_key=settings.GROQ_API_KEY.get_secret_value() if settings.GROQ_API_KEY else None,
+        )  # type: ignore[call-arg]
     if model_name in AWSModelName:
         return ChatBedrock(model_id=api_model_name, temperature=0.5)
     if model_name in OllamaModelName:
