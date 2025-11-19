@@ -6,8 +6,10 @@ Endpoints para listar, invocar e fazer stream de agentes.
 
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from langgraph.graph.state import CompiledStateGraph
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from taskni_core.agents.base import BaseAgent
 from taskni_core.agents.registry import agent_registry
@@ -19,11 +21,17 @@ from taskni_core.schema.agent_io import (
 
 router = APIRouter()
 
+# Inicializa limiter (será injetado pelo app)
+limiter = Limiter(key_func=get_remote_address)
+
 
 @router.get("/", response_model=list[AgentListItem])
-async def list_agents():
+@limiter.limit("60/minute")  # 60 requests por minuto - menos crítico
+async def list_agents(request: Request):
     """
     Lista todos os agentes disponíveis.
+
+    Rate limit: 60 requests/minuto por IP
 
     Returns:
         Lista de agentes com seus metadados
@@ -33,7 +41,8 @@ async def list_agents():
 
 
 @router.post("/invoke", response_model=AgentInvokeResponse)
-async def invoke_agent(payload: AgentInvokeRequest):
+@limiter.limit("10/minute")  # 10 requests por minuto - CRÍTICO
+async def invoke_agent(request: Request, payload: AgentInvokeRequest):
     """
     Invoca um agente com uma mensagem.
 
@@ -128,9 +137,12 @@ async def _invoke_langgraph_agent(
 
 
 @router.post("/stream")
-async def stream_agent(payload: AgentInvokeRequest):
+@limiter.limit("5/minute")  # 5 requests por minuto - streaming é custoso
+async def stream_agent(request: Request, payload: AgentInvokeRequest):
     """
     Stream de resposta do agente.
+
+    Rate limit: 5 requests/minuto por IP
 
     TODO: Implementar streaming com Server-Sent Events (SSE)
     """

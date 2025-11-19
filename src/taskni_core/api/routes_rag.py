@@ -12,8 +12,10 @@ import os
 import tempfile
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
 from pydantic import BaseModel
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from taskni_core.rag.ingest import get_ingestion_pipeline
 
@@ -23,6 +25,9 @@ from taskni_core.rag.ingest import get_ingestion_pipeline
 # ============================================================================
 
 router = APIRouter(tags=["RAG"])
+
+# Inicializa limiter (será injetado pelo app)
+limiter = Limiter(key_func=get_remote_address)
 
 
 # ============================================================================
@@ -68,12 +73,16 @@ class DeleteResponse(BaseModel):
 # ============================================================================
 
 @router.post("/upload", response_model=UploadResponse)
+@limiter.limit("5/minute")  # 5 uploads por minuto - pode encher disco
 async def upload_document(
+    request: Request,
     file: UploadFile = File(...),
     metadata: Optional[str] = None,
 ):
     """
     Upload e ingestão de documento (PDF ou texto).
+
+    Rate limit: 5 requests/minuto por IP
 
     Args:
         file: Arquivo a ser ingerido (PDF, TXT, MD)
@@ -141,9 +150,12 @@ async def upload_document(
 
 
 @router.post("/ingest/text", response_model=IngestTextResponse)
-async def ingest_text(payload: IngestTextRequest):
+@limiter.limit("10/minute")  # 10 ingestões de texto por minuto
+async def ingest_text(request: Request, payload: IngestTextRequest):
     """
     Ingere texto direto (sem arquivo).
+
+    Rate limit: 10 requests/minuto por IP
 
     Args:
         payload: Texto e metadata opcional
@@ -174,9 +186,12 @@ async def ingest_text(payload: IngestTextRequest):
 
 
 @router.get("/documents", response_model=DocumentsStatsResponse)
-async def get_documents_stats():
+@limiter.limit("30/minute")  # 30 consultas por minuto - menos crítico
+async def get_documents_stats(request: Request):
     """
     Retorna estatísticas sobre os documentos ingeridos.
+
+    Rate limit: 30 requests/minuto por IP
 
     Returns:
         Informações sobre a coleção ChromaDB
@@ -192,11 +207,13 @@ async def get_documents_stats():
 
 
 @router.delete("/documents", response_model=DeleteResponse)
-async def delete_all_documents():
+@limiter.limit("1/hour")  # 1 deleção por hora - SUPER CRÍTICO!
+async def delete_all_documents(request: Request):
     """
     Deleta todos os documentos da coleção.
 
     ⚠️ CUIDADO: Esta operação é irreversível!
+    Rate limit: 1 request/hora por IP (operação destrutiva)
 
     Returns:
         Confirmação da deleção
