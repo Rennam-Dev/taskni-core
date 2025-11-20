@@ -7,9 +7,11 @@ Testa:
 2. Streaming de respostas
 3. IntakeAgent com o novo sistema
 """
+
 import sys
 import asyncio
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.agents.intake_agent import IntakeAgent
@@ -32,7 +34,7 @@ async def test_multi_provider_direct():
 
     messages = [
         {"role": "system", "content": "Você é um assistente amigável."},
-        {"role": "user", "content": "Diga olá em português de forma breve."}
+        {"role": "user", "content": "Diga olá em português de forma breve."},
     ]
 
     print(f"\n💬 Enviando mensagem: 'Diga olá em português de forma breve.'")
@@ -46,15 +48,16 @@ async def test_multi_provider_direct():
             reply = str(response)
 
         print(f"\n✅ RESPOSTA RECEBIDA:")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(reply)
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         return True
 
     except Exception as e:
         print(f"\n❌ ERRO: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -72,12 +75,12 @@ async def test_multi_provider_streaming():
 
     messages = [
         {"role": "system", "content": "Você é um assistente que conta até 5."},
-        {"role": "user", "content": "Conte de 1 até 5, um número por linha."}
+        {"role": "user", "content": "Conte de 1 até 5, um número por linha."},
     ]
 
     print(f"\n💬 Enviando mensagem para streaming...")
     print(f"\n✅ RESPOSTA (STREAMING):")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     try:
         full_response = ""
@@ -85,7 +88,7 @@ async def test_multi_provider_streaming():
             print(chunk, end="", flush=True)
             full_response += chunk
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"\n✅ Stream concluído! Total de caracteres: {len(full_response)}")
 
         return True
@@ -93,6 +96,7 @@ async def test_multi_provider_streaming():
     except Exception as e:
         print(f"\n❌ ERRO: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -121,10 +125,7 @@ async def test_intake_agent_with_multi_provider():
     context = {
         "user_id": "patient_001",
         "session_id": "session_001",
-        "metadata": {
-            "source": "whatsapp",
-            "phone": "+5511987654321"
-        }
+        "metadata": {"source": "whatsapp", "phone": "+5511987654321"},
     }
 
     print(f"\n📤 Mensagem do paciente:")
@@ -138,15 +139,16 @@ async def test_intake_agent_with_multi_provider():
         reply = await agent.run(message=message, context=context)
 
         print(f"\n✅ RESPOSTA DO AGENTE:")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
         print(reply)
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         return True
 
     except Exception as e:
         print(f"\n❌ ERRO: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -164,9 +166,7 @@ async def test_fallback_mechanism():
 
     llm = MultiProviderLLM(enable_streaming=False)
 
-    messages = [
-        {"role": "user", "content": "Teste de fallback"}
-    ]
+    messages = [{"role": "user", "content": "Teste de fallback"}]
 
     try:
         response = await llm.ainvoke(messages)
@@ -240,4 +240,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

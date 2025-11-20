@@ -8,9 +8,11 @@ Testa:
 3. Workflow LangGraph completo
 4. Integração com MultiProviderLLM
 """
+
 import sys
 import asyncio
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.agents.advanced.followup_agent import create_followup_agent
 
@@ -82,7 +84,7 @@ async def test_intent_detection():
     results = []
 
     for scenario in scenarios:
-        print(f"\n{'─'*80}")
+        print(f"\n{'─' * 80}")
         print(f"📝 Cenário: {scenario['name']}")
         print(f"   Paciente: {scenario['patient_name']}")
         print(f"   Dias inativo: {scenario['days_inactive']}")
@@ -102,16 +104,18 @@ async def test_intent_detection():
         print(f"\n   📨 Mensagem gerada:")
         print(f"      {result['message']}")
 
-        results.append({
-            "scenario": scenario["name"],
-            "intent_correct": intent_match,
-            "message_generated": bool(result["message"]),
-        })
+        results.append(
+            {
+                "scenario": scenario["name"],
+                "intent_correct": intent_match,
+                "message_generated": bool(result["message"]),
+            }
+        )
 
     # Resumo
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"📊 RESUMO - DETECÇÃO DE INTENÇÕES")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     correct_intents = sum(1 for r in results if r["intent_correct"])
     all_messages = sum(1 for r in results if r["message_generated"])
@@ -146,13 +150,13 @@ async def test_message_quality():
     )
 
     print(f"\n✅ Resultado:")
-    print(f"{'─'*80}")
+    print(f"{'─' * 80}")
     print(f"Intenção: {result['intent']}")
     print(f"Pronto para envio: {result['ready_for_delivery']}")
     print(f"Enviar em: {result['send_at']}")
     print(f"\nMensagem:")
     print(f"{result['message']}")
-    print(f"{'─'*80}")
+    print(f"{'─' * 80}")
 
     # Validações de qualidade
     message = result["message"]
@@ -200,7 +204,7 @@ async def test_workflow_complete():
     for name, days, message, *context_args in test_cases:
         context = context_args[0] if context_args else {}
 
-        print(f"\n{'─'*40}")
+        print(f"\n{'─' * 40}")
         print(f"📝 Teste: {name}")
 
         result = await agent.run(
@@ -218,20 +222,21 @@ async def test_workflow_complete():
         print(f"   Mensagem: {result['message'][:50]}...")
         print(f"   Status: {'✅ Pronto' if is_ready else '❌ Não pronto'}")
 
-        workflow_results.append({
-            "test": name,
-            "has_intent": has_intent,
-            "has_message": has_message,
-            "is_ready": is_ready,
-        })
+        workflow_results.append(
+            {
+                "test": name,
+                "has_intent": has_intent,
+                "has_message": has_message,
+                "is_ready": is_ready,
+            }
+        )
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"📊 RESUMO - WORKFLOW")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
 
     all_complete = all(
-        r["has_intent"] and r["has_message"] and r["is_ready"]
-        for r in workflow_results
+        r["has_intent"] and r["has_message"] and r["is_ready"] for r in workflow_results
     )
 
     if all_complete:
@@ -287,6 +292,7 @@ async def main():
     except Exception as e:
         print(f"\n\n❌ Erro durante os testes: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -298,4 +304,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

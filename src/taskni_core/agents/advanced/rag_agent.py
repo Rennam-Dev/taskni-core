@@ -21,11 +21,13 @@ from langchain_core.prompts import ChatPromptTemplate
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.security import sanitize_prompt_input
 
 
 # ============================================================================
 # State Definition
 # ============================================================================
+
 
 class RagState(TypedDict):
     """
@@ -39,6 +41,7 @@ class RagState(TypedDict):
     - sources: Fontes dos documentos
     - messages: Histórico de mensagens (para LangGraph)
     """
+
     question: str
     retrieved_docs: List[Document]
     context: str
@@ -50,6 +53,7 @@ class RagState(TypedDict):
 # ============================================================================
 # Agent Nodes
 # ============================================================================
+
 
 class FaqRagAgent:
     """
@@ -68,12 +72,7 @@ class FaqRagAgent:
         "Busca documentos relevantes e gera respostas baseadas no contexto recuperado."
     )
 
-    def __init__(
-        self,
-        k_documents: int = 4,
-        enable_streaming: bool = True,
-        cache_size: int = 50
-    ):
+    def __init__(self, k_documents: int = 4, enable_streaming: bool = True, cache_size: int = 50):
         """
         Inicializa o agente RAG.
 
@@ -131,10 +130,7 @@ class FaqRagAgent:
         print(f"🔍 Buscando documentos para: '{question}'")
 
         # Busca documentos similares
-        docs = self.ingestion.search(
-            query=question,
-            k=self.k_documents
-        )
+        docs = self.ingestion.search(query=question, k=self.k_documents)
 
         print(f"   ✅ {len(docs)} documentos recuperados")
 
@@ -180,10 +176,12 @@ class FaqRagAgent:
         print(f"🤖 Gerando resposta...")
 
         # Template do prompt
-        prompt_template = ChatPromptTemplate.from_messages([
-            ("system", self._get_system_prompt()),
-            ("human", self._get_user_prompt_template()),
-        ])
+        prompt_template = ChatPromptTemplate.from_messages(
+            [
+                ("system", self._get_system_prompt()),
+                ("human", self._get_user_prompt_template()),
+            ]
+        )
 
         # Formata prompt
         messages = prompt_template.format_messages(
@@ -208,7 +206,8 @@ class FaqRagAgent:
         return {
             **state,
             "answer": response,
-            "messages": state.get("messages", []) + [
+            "messages": state.get("messages", [])
+            + [
                 HumanMessage(content=question),
                 AIMessage(content=response),
             ],
@@ -324,7 +323,7 @@ Responda em {language}."""
 
     async def run(self, question: str) -> dict:
         """
-        Executa o agente RAG com cache.
+        Executa o agente RAG com cache e sanitização de input.
 
         Args:
             question: Pergunta do usuário
@@ -332,15 +331,19 @@ Responda em {language}."""
         Returns:
             Dict com answer, sources, retrieved_docs, cached
         """
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"🤖 FaqRagAgent: Processando pergunta")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
+
+        # SANITIZA O INPUT PARA PREVENIR PROMPT INJECTION
+        # Permite quebras de linha pois perguntas podem ser multilinhas
+        question = sanitize_prompt_input(question, max_length=500, allow_multiline=True)
 
         # Tenta buscar no cache
         cached_result = self._get_from_cache(question)
 
         if cached_result is not None:
-            print(f"{'='*80}\n")
+            print(f"{'=' * 80}\n")
             return {
                 "answer": cached_result["answer"],
                 "sources": cached_result["sources"],
@@ -366,12 +369,10 @@ Responda em {language}."""
 
         # Salva no cache
         self._save_to_cache(
-            question=question,
-            answer=final_state["answer"],
-            sources=final_state["sources"]
+            question=question, answer=final_state["answer"], sources=final_state["sources"]
         )
 
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
         # Retorna resultado
         return {
@@ -384,6 +385,7 @@ Responda em {language}."""
     def invoke_sync(self, question: str) -> dict:
         """Versão síncrona do run() para compatibilidade."""
         import asyncio
+
         return asyncio.run(self.run(question))
 
 
@@ -391,10 +393,8 @@ Responda em {language}."""
 # Factory Function
 # ============================================================================
 
-def create_faq_rag_agent(
-    k_documents: int = 4,
-    enable_streaming: bool = True
-) -> FaqRagAgent:
+
+def create_faq_rag_agent(k_documents: int = 4, enable_streaming: bool = True) -> FaqRagAgent:
     """
     Factory para criar instância do FaqRagAgent.
 
@@ -405,7 +405,4 @@ def create_faq_rag_agent(
     Returns:
         Instância do FaqRagAgent (já compilado)
     """
-    return FaqRagAgent(
-        k_documents=k_documents,
-        enable_streaming=enable_streaming
-    )
+    return FaqRagAgent(k_documents=k_documents, enable_streaming=enable_streaming)

@@ -35,6 +35,14 @@ class TaskniSettings(BaseSettings):
     LOG_LEVEL: str = "INFO"
 
     # ==========================================
+    # Authentication (Bearer Token)
+    # ==========================================
+    # Token único de autenticação (recomendado para produção)
+    API_TOKEN: SecretStr | None = None
+    # Múltiplos tokens separados por vírgula (para múltiplos clientes)
+    API_TOKENS: SecretStr | None = None
+
+    # ==========================================
     # Integrações específicas do Taskni
     # ==========================================
 
@@ -120,5 +128,6 @@ def get_core_settings():
     global _core_settings
     if _core_settings is None:
         from core.settings import settings as core_settings
+
         _core_settings = core_settings
     return _core_settings

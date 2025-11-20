@@ -1,6 +1,7 @@
 """
 Teste para validar configuração CORS no FastAPI.
 """
+
 import sys
 from pathlib import Path
 
@@ -9,6 +10,7 @@ sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 from fastapi.testclient import TestClient
 from service.service import app
+
 
 def test_cors_headers():
     """Testa se os headers CORS estão presentes nas respostas."""
@@ -20,7 +22,7 @@ def test_cors_headers():
         headers={
             "Origin": "http://localhost:3000",
             "Access-Control-Request-Method": "GET",
-        }
+        },
     )
 
     # Verifica se os headers CORS estão presentes
@@ -33,14 +35,12 @@ def test_cors_headers():
     print(f"   Allow-Methods: {response.headers.get('access-control-allow-methods')}")
     print(f"   Allow-Headers: {response.headers.get('access-control-allow-headers')}")
 
+
 def test_cors_on_actual_request():
     """Testa se CORS funciona em requisição real."""
     client = TestClient(app)
 
-    response = client.get(
-        "/health",
-        headers={"Origin": "http://localhost:3000"}
-    )
+    response = client.get("/health", headers={"Origin": "http://localhost:3000"})
 
     assert response.status_code == 200
     assert "access-control-allow-origin" in response.headers
@@ -48,6 +48,7 @@ def test_cors_on_actual_request():
     print("✅ Requisição GET com CORS funcionando!")
     print(f"   Status: {response.status_code}")
     print(f"   Allow-Origin: {response.headers.get('access-control-allow-origin')}")
+
 
 if __name__ == "__main__":
     print("🧪 Testando configuração CORS...\n")

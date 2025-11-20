@@ -1,15 +1,17 @@
 #!/usr/bin/env python
 """Teste standalone do IntakeAgent com Groq."""
+
 import sys
 import asyncio
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.agents.intake_agent import IntakeAgent
 from taskni_core.core.settings import taskni_settings
 
-print("="*60)
+print("=" * 60)
 print("🧪 Teste do IntakeAgent com Groq (llama-3.1-8b)")
-print("="*60)
+print("=" * 60)
 
 print(f"\n📋 Configurações:")
 print(f"   BUSINESS_NAME: {taskni_settings.BUSINESS_NAME}")
@@ -20,6 +22,7 @@ agent = IntakeAgent()
 print(f"   ID: {agent.id}")
 print(f"   Name: {agent.name}")
 
+
 async def test_agent():
     print(f"\n💬 Teste 1: Primeira mensagem do paciente")
     print(f"   Entrada: 'Olá, bom dia! Gostaria de agendar uma consulta'")
@@ -28,24 +31,22 @@ async def test_agent():
         message="Olá, bom dia! Gostaria de agendar uma consulta",
         context={
             "user_id": "patient_001",
-            "metadata": {
-                "source": "whatsapp",
-                "phone": "+5511987654321"
-            }
-        }
+            "metadata": {"source": "whatsapp", "phone": "+5511987654321"},
+        },
     )
 
     print(f"\n   Resposta do agente:")
-    print(f"   {'-'*56}")
+    print(f"   {'-' * 56}")
     print(f"   {reply}")
-    print(f"   {'-'*56}")
+    print(f"   {'-' * 56}")
 
     print(f"\n✅ Teste concluído com sucesso!")
     return reply
 
+
 print(f"\n🚀 Executando teste assíncrono...")
 result = asyncio.run(test_agent())
 
-print(f"\n{'='*60}")
+print(f"\n{'=' * 60}")
 print(f"✨ Teste finalizado!")
-print(f"{'='*60}")
+print(f"{'=' * 60}")

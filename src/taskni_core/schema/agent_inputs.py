@@ -18,27 +18,17 @@ class FollowupInput(BaseModel):
     """
 
     patient_name: str = Field(
-        ...,
-        min_length=1,
-        max_length=200,
-        description="Nome do paciente (obrigatório)"
+        ..., min_length=1, max_length=200, description="Nome do paciente (obrigatório)"
     )
 
-    days_inactive: int = Field(
-        ...,
-        ge=0,
-        description="Dias desde último contato (deve ser >= 0)"
-    )
+    days_inactive: int = Field(..., ge=0, description="Dias desde último contato (deve ser >= 0)")
 
     last_message: str = Field(
-        default="",
-        max_length=1000,
-        description="Última mensagem do paciente"
+        default="", max_length=1000, description="Última mensagem do paciente"
     )
 
     context: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Contexto adicional (clinic_type, service, etc)"
+        default_factory=dict, description="Contexto adicional (clinic_type, service, etc)"
     )
 
     @field_validator("days_inactive")
@@ -66,8 +56,8 @@ class FollowupInput(BaseModel):
                 "context": {
                     "clinic_type": "clínica geral",
                     "service": "consulta",
-                    "is_patient": True
-                }
+                    "is_patient": True,
+                },
             }
         }
 
@@ -79,18 +69,10 @@ class RagQueryInput(BaseModel):
     Valida perguntas para busca RAG.
     """
 
-    question: str = Field(
-        ...,
-        min_length=1,
-        max_length=500,
-        description="Pergunta do usuário"
-    )
+    question: str = Field(..., min_length=1, max_length=500, description="Pergunta do usuário")
 
     k_documents: Optional[int] = Field(
-        default=4,
-        ge=1,
-        le=10,
-        description="Número de documentos a recuperar (1-10)"
+        default=4, ge=1, le=10, description="Número de documentos a recuperar (1-10)"
     )
 
     @field_validator("question")
@@ -103,10 +85,7 @@ class RagQueryInput(BaseModel):
 
     class Config:
         json_schema_extra = {
-            "example": {
-                "question": "Qual o horário de funcionamento?",
-                "k_documents": 4
-            }
+            "example": {"question": "Qual o horário de funcionamento?", "k_documents": 4}
         }
 
 
@@ -117,26 +96,14 @@ class IntakeInput(BaseModel):
     Valida mensagens para triagem inicial.
     """
 
-    message: str = Field(
-        ...,
-        min_length=1,
-        max_length=1000,
-        description="Mensagem do paciente"
-    )
+    message: str = Field(..., min_length=1, max_length=1000, description="Mensagem do paciente")
 
-    user_id: Optional[str] = Field(
-        default=None,
-        description="ID do usuário (opcional)"
-    )
+    user_id: Optional[str] = Field(default=None, description="ID do usuário (opcional)")
 
-    session_id: Optional[str] = Field(
-        default=None,
-        description="ID da sessão (opcional)"
-    )
+    session_id: Optional[str] = Field(default=None, description="ID da sessão (opcional)")
 
     metadata: Dict[str, Any] = Field(
-        default_factory=dict,
-        description="Metadata adicional (phone, source, etc)"
+        default_factory=dict, description="Metadata adicional (phone, source, etc)"
     )
 
     @field_validator("message")
@@ -153,9 +120,6 @@ class IntakeInput(BaseModel):
                 "message": "Gostaria de agendar uma consulta",
                 "user_id": "patient_001",
                 "session_id": "session_123",
-                "metadata": {
-                    "phone": "+5511987654321",
-                    "source": "whatsapp"
-                }
+                "metadata": {"phone": "+5511987654321", "source": "whatsapp"},
             }
         }

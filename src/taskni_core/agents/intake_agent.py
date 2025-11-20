@@ -38,6 +38,7 @@ class IntakeAgent(BaseAgent):
         """Lazy load do LLM multi-provedor com fallback automático."""
         if self._llm is None:
             from taskni_core.core.llm_provider import MultiProviderLLM
+
             self._llm = MultiProviderLLM(enable_streaming=True)
         return self._llm
 

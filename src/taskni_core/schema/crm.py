@@ -83,21 +83,21 @@ class Patient(BaseModel):
     )
 
     # Integrações
-    chatwoot_contact_id: Optional[int] = Field(
-        None, description="ID no Chatwoot"
-    )
-    evolution_remote_jid: Optional[str] = Field(
-        None, description="JID do WhatsApp (Evolution API)"
-    )
+    chatwoot_contact_id: Optional[int] = Field(None, description="ID no Chatwoot")
+    evolution_remote_jid: Optional[str] = Field(None, description="JID do WhatsApp (Evolution API)")
 
-    model_config = {"json_schema_extra": {"example": {
-        "id": "pt_123456",
-        "name": "João Silva",
-        "phone": "+5511999999999",
-        "email": "joao@example.com",
-        "status": "active",
-        "created_at": "2025-01-15T10:00:00",
-    }}}
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": "pt_123456",
+                "name": "João Silva",
+                "phone": "+5511999999999",
+                "email": "joao@example.com",
+                "status": "active",
+                "created_at": "2025-01-15T10:00:00",
+            }
+        }
+    }
 
 
 class Appointment(BaseModel):
@@ -120,12 +120,8 @@ class Appointment(BaseModel):
         default=AppointmentStatus.SCHEDULED,
         description="Status do agendamento",
     )
-    confirmed_at: Optional[datetime] = Field(
-        None, description="Quando foi confirmado"
-    )
-    completed_at: Optional[datetime] = Field(
-        None, description="Quando foi concluído"
-    )
+    confirmed_at: Optional[datetime] = Field(None, description="Quando foi confirmado")
+    completed_at: Optional[datetime] = Field(None, description="Quando foi concluído")
 
     created_at: datetime = Field(
         default_factory=datetime.now,
@@ -133,18 +129,20 @@ class Appointment(BaseModel):
     )
 
     # Integrações
-    calendar_event_id: Optional[str] = Field(
-        None, description="ID no Cal.com ou Google Calendar"
-    )
+    calendar_event_id: Optional[str] = Field(None, description="ID no Cal.com ou Google Calendar")
 
-    model_config = {"json_schema_extra": {"example": {
-        "id": "apt_789",
-        "patient_id": "pt_123456",
-        "scheduled_at": "2025-01-20T14:00:00",
-        "duration_minutes": 30,
-        "service_type": "Consulta inicial",
-        "status": "scheduled",
-    }}}
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": "apt_789",
+                "patient_id": "pt_123456",
+                "scheduled_at": "2025-01-20T14:00:00",
+                "duration_minutes": 30,
+                "service_type": "Consulta inicial",
+                "status": "scheduled",
+            }
+        }
+    }
 
 
 class Ticket(BaseModel):
@@ -166,14 +164,10 @@ class Ticket(BaseModel):
         default=TicketPriority.MEDIUM,
         description="Prioridade",
     )
-    category: Optional[str] = Field(
-        None, description="Categoria (dúvida, reclamação, etc)"
-    )
+    category: Optional[str] = Field(None, description="Categoria (dúvida, reclamação, etc)")
 
     # Controle
-    assigned_to: Optional[str] = Field(
-        None, description="Atribuído a (usuário/agente)"
-    )
+    assigned_to: Optional[str] = Field(None, description="Atribuído a (usuário/agente)")
     created_at: datetime = Field(
         default_factory=datetime.now,
         description="Data de abertura",
@@ -182,20 +176,20 @@ class Ticket(BaseModel):
         default_factory=datetime.now,
         description="Última atualização",
     )
-    resolved_at: Optional[datetime] = Field(
-        None, description="Data de resolução"
-    )
+    resolved_at: Optional[datetime] = Field(None, description="Data de resolução")
 
     # Integrações
-    chatwoot_conversation_id: Optional[int] = Field(
-        None, description="ID da conversa no Chatwoot"
-    )
+    chatwoot_conversation_id: Optional[int] = Field(None, description="ID da conversa no Chatwoot")
 
-    model_config = {"json_schema_extra": {"example": {
-        "id": "tkt_456",
-        "patient_id": "pt_123456",
-        "subject": "Dúvida sobre exame",
-        "status": "open",
-        "priority": "medium",
-        "created_at": "2025-01-15T11:00:00",
-    }}}
+    model_config = {
+        "json_schema_extra": {
+            "example": {
+                "id": "tkt_456",
+                "patient_id": "pt_123456",
+                "subject": "Dúvida sobre exame",
+                "status": "open",
+                "priority": "medium",
+                "created_at": "2025-01-15T11:00:00",
+            }
+        }
+    }

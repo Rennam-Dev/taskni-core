@@ -102,19 +102,32 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 app = FastAPI(lifespan=lifespan, generate_unique_id_function=custom_generate_unique_id)
 
-# Configuração CORS para permitir requisições do frontend
-# Em desenvolvimento, permite todas as origens
-# Em produção, configure CORS_ORIGINS no .env com as origens permitidas
-cors_origins = ["*"]  # Permite todas as origens em desenvolvimento
+# Configuração CORS segura
+# IMPORTANTE: allow_origins=["*"] com allow_credentials=True é MUITO PERIGOSO!
+# Sempre use uma whitelist específica de origens permitidas.
 if hasattr(settings, "CORS_ORIGINS") and settings.CORS_ORIGINS:
-    cors_origins = settings.CORS_ORIGINS.split(",")
+    # Produção: use lista específica do .env
+    cors_origins = [origin.strip() for origin in settings.CORS_ORIGINS.split(",")]
+else:
+    # Desenvolvimento: apenas localhost
+    cors_origins = [
+        "http://localhost:3000",
+        "http://localhost:3001",
+        "http://localhost:8501",  # Streamlit
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8501",
+    ]
+    logger.warning(
+        "⚠️  CORS using default localhost origins. Set CORS_ORIGINS in .env for production!"
+    )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=cors_origins,
+    allow_origins=cors_origins,  # Lista específica, NUNCA ["*"]
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos os métodos (GET, POST, etc.)
-    allow_headers=["*"],  # Permite todos os headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],  # Apenas métodos necessários
+    allow_headers=["Content-Type", "Authorization", "Accept"],  # Apenas headers necessários
+    max_age=3600,  # Cache preflight requests por 1 hora
 )
 
 router = APIRouter(dependencies=[Depends(verify_bearer)])

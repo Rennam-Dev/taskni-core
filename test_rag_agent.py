@@ -8,9 +8,11 @@ Testa:
 3. FaqRagAgent com LangGraph
 4. Endpoints REST
 """
+
 import sys
 import asyncio
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.rag.ingest import DocumentIngestion
 from taskni_core.agents.advanced.rag_agent import create_faq_rag_agent
@@ -85,10 +87,7 @@ async def test_ingestion():
 
     total_chunks = 0
     for i, text in enumerate(texts, 1):
-        chunks = pipeline.ingest_text_direct(
-            text=text,
-            metadata={"doc_id": i, "source": "test"}
-        )
+        chunks = pipeline.ingest_text_direct(text=text, metadata={"doc_id": i, "source": "test"})
         total_chunks += chunks
         print(f"   ✅ Documento {i}: {chunks} chunks")
 
@@ -167,9 +166,9 @@ async def test_rag_agent(pipeline: DocumentIngestion):
             result = await agent.run(question)
 
             print(f"\n✅ Resposta:")
-            print(f"{'='*80}")
+            print(f"{'=' * 80}")
             print(result["answer"])
-            print(f"{'='*80}")
+            print(f"{'=' * 80}")
 
             if result.get("sources"):
                 print(f"\n📚 Fontes:")
@@ -179,6 +178,7 @@ async def test_rag_agent(pipeline: DocumentIngestion):
         except Exception as e:
             print(f"\n⚠️  Erro ao executar agente: {e}")
             import traceback
+
             traceback.print_exc()
 
     print(f"\n✅ FaqRagAgent testado")
@@ -230,6 +230,7 @@ async def main():
     except Exception as e:
         print(f"\n\n❌ Erro durante os testes: {e}")
         import traceback
+
         traceback.print_exc()
 
 
@@ -241,4 +242,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

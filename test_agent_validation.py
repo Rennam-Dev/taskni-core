@@ -7,8 +7,10 @@ Valida que:
 2. Inputs inválidos geram erros claros
 3. Validações específicas funcionam
 """
+
 import sys
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from pydantic import ValidationError
 from taskni_core.schema.agent_inputs import FollowupInput, RagQueryInput, IntakeInput
@@ -29,7 +31,7 @@ def test_followup_input_valid():
         "patient_name": "João Silva",
         "days_inactive": 45,
         "last_message": "Obrigado!",
-        "context": {"is_patient": True}
+        "context": {"is_patient": True},
     }
 
     try:
@@ -114,10 +116,7 @@ def test_rag_query_input_valid():
     print("📋 TESTE 5: RagQueryInput Válido")
     print("=" * 80)
 
-    data = {
-        "question": "Qual o horário de funcionamento?",
-        "k_documents": 4
-    }
+    data = {"question": "Qual o horário de funcionamento?", "k_documents": 4}
 
     try:
         input_obj = RagQueryInput(**data)
@@ -138,7 +137,7 @@ def test_rag_query_input_k_out_of_range():
 
     data = {
         "question": "Pergunta válida",
-        "k_documents": 50  # Máximo é 10
+        "k_documents": 50,  # Máximo é 10
     }
 
     try:
@@ -160,7 +159,7 @@ def test_intake_input_valid():
     data = {
         "message": "Gostaria de agendar uma consulta",
         "user_id": "patient_001",
-        "metadata": {"phone": "+5511987654321"}
+        "metadata": {"phone": "+5511987654321"},
     }
 
     try:
@@ -220,4 +219,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

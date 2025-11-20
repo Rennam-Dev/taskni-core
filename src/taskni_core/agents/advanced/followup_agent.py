@@ -16,11 +16,13 @@ from langgraph.graph import StateGraph, END
 
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.security import sanitize_prompt_input
 
 
 # ============================================================================
 # State Definition
 # ============================================================================
+
 
 class FollowupState(TypedDict):
     """
@@ -36,6 +38,7 @@ class FollowupState(TypedDict):
     - ready_for_delivery: Se está pronto para envio
     - send_at: Quando enviar (now, scheduled)
     """
+
     patient_name: str
     days_inactive: int
     last_message: str
@@ -49,6 +52,7 @@ class FollowupState(TypedDict):
 # ============================================================================
 # Agent Nodes
 # ============================================================================
+
 
 class FollowupAgent:
     """
@@ -381,20 +385,16 @@ EXEMPLO: "Oi [nome]! Que tal um check-up? Cuidar da saúde preventivamente é se
 
         specific_instruction = intent_instructions.get(
             intent,
-            intent_instructions["reativacao"]  # Default
+            intent_instructions["reativacao"],  # Default
         )
 
         return base_prompt + "\n" + specific_instruction
 
     def _get_user_prompt(
-        self,
-        patient_name: str,
-        intent: str,
-        days_inactive: int,
-        context: dict
+        self, patient_name: str, intent: str, days_inactive: int, context: dict
     ) -> str:
         """
-        Constrói o prompt do usuário.
+        Constrói o prompt do usuário com sanitização de inputs.
 
         Args:
             patient_name: Nome do paciente
@@ -403,11 +403,14 @@ EXEMPLO: "Oi [nome]! Que tal um check-up? Cuidar da saúde preventivamente é se
             context: Contexto adicional
 
         Returns:
-            Prompt formatado
+            Prompt formatado e sanitizado
         """
-        clinic_type = context.get("clinic_type", "clínica")
-        service = context.get("service", "atendimento")
-        tone = context.get("tone", "amigável")
+        # SANITIZA TODOS OS INPUTS PARA PREVENIR PROMPT INJECTION
+        patient_name = sanitize_prompt_input(patient_name, max_length=200)
+        intent = sanitize_prompt_input(intent, max_length=50)
+        clinic_type = sanitize_prompt_input(context.get("clinic_type", "clínica"), max_length=100)
+        service = sanitize_prompt_input(context.get("service", "atendimento"), max_length=100)
+        tone = sanitize_prompt_input(context.get("tone", "amigável"), max_length=50)
 
         prompt = f"""Crie uma mensagem de followup para:
 
@@ -430,7 +433,7 @@ Mensagem:"""
         days_inactive: int = None,
         last_message: str = "",
         context: dict = None,
-        input_data: 'FollowupInput' = None,
+        input_data: "FollowupInput" = None,
     ) -> dict:
         """
         Executa o agente de followup.
@@ -448,6 +451,7 @@ Mensagem:"""
         # Suporta tanto input direto quanto FollowupInput
         if input_data is not None:
             from taskni_core.schema.agent_inputs import FollowupInput
+
             # Valida se é instância de FollowupInput
             if not isinstance(input_data, FollowupInput):
                 input_data = FollowupInput(**input_data)
@@ -461,9 +465,9 @@ Mensagem:"""
             if patient_name is None or days_inactive is None:
                 raise ValueError("patient_name and days_inactive are required")
 
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"🤖 FollowupAgent: Processando followup")
-        print(f"{'='*80}")
+        print(f"{'=' * 80}")
 
         # Estado inicial
         initial_state = {
@@ -480,7 +484,7 @@ Mensagem:"""
         # Executa o grafo
         final_state = await self.graph.ainvoke(initial_state)
 
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
         # Retorna resultado
         return {
@@ -499,14 +503,14 @@ Mensagem:"""
     ) -> dict:
         """Versão síncrona do run() para compatibilidade."""
         import asyncio
-        return asyncio.run(
-            self.run(patient_name, days_inactive, last_message, context)
-        )
+
+        return asyncio.run(self.run(patient_name, days_inactive, last_message, context))
 
 
 # ============================================================================
 # Factory Function
 # ============================================================================
+
 
 def create_followup_agent(enable_streaming: bool = False) -> FollowupAgent:
     """

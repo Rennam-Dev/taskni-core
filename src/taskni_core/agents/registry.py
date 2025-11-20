@@ -142,6 +142,7 @@ def list_agents(include_disabled: bool = False) -> list[Dict[str, Any]]:
 # Auto-registro de agentes com base nas configurações
 # ===================================================================
 
+
 def register_taskni_agents():
     """
     Registra os agentes do Taskni baseado nas configurações.

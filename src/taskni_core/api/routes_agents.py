@@ -4,10 +4,13 @@ Rotas para agentes.
 Endpoints para listar, invocar e fazer stream de agentes.
 """
 
+import logging
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from langgraph.graph.state import CompiledStateGraph
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from taskni_core.agents.base import BaseAgent
 from taskni_core.agents.registry import agent_registry
@@ -16,14 +19,23 @@ from taskni_core.schema.agent_io import (
     AgentInvokeResponse,
     AgentListItem,
 )
+from taskni_core.utils.error_handler import safe_str_exception
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+# Inicializa limiter (será injetado pelo app)
+limiter = Limiter(key_func=get_remote_address)
+
 
 @router.get("/", response_model=list[AgentListItem])
-async def list_agents():
+@limiter.limit("60/minute")  # 60 requests por minuto - menos crítico
+async def list_agents(request: Request):
     """
     Lista todos os agentes disponíveis.
+
+    Rate limit: 60 requests/minuto por IP
 
     Returns:
         Lista de agentes com seus metadados
@@ -33,7 +45,8 @@ async def list_agents():
 
 
 @router.post("/invoke", response_model=AgentInvokeResponse)
-async def invoke_agent(payload: AgentInvokeRequest):
+@limiter.limit("10/minute")  # 10 requests por minuto - CRÍTICO
+async def invoke_agent(request: Request, payload: AgentInvokeRequest):
     """
     Invoca um agente com uma mensagem.
 
@@ -52,11 +65,12 @@ async def invoke_agent(payload: AgentInvokeRequest):
         raise HTTPException(status_code=404, detail=str(e))
 
     # Prepara o contexto
+    # Converte metadata tipado para dicionário (compatibilidade com agentes)
     context = {
         "user_id": payload.user_id,
         "session_id": payload.session_id,
         "thread_id": payload.thread_id,
-        "metadata": payload.metadata,
+        "metadata": payload.metadata.model_dump(exclude_none=True),
     }
 
     try:
@@ -75,18 +89,31 @@ async def invoke_agent(payload: AgentInvokeRequest):
                 context=context,
             )
 
+        # Cria resposta com metadata vazio (pode ser populado depois)
+        from taskni_core.schema.metadata_schemas import ResponseMetadata
+
         return AgentInvokeResponse(
             agent_id=payload.agent_id,
             reply=reply,
             session_id=payload.session_id,
             thread_id=payload.thread_id,
-            metadata={},
+            metadata=ResponseMetadata(),
         )
 
     except Exception as e:
+        # Loga detalhes internos NO SERVIDOR (não expõe ao cliente)
+        logger.error(
+            f"Erro ao executar agente {payload.agent_id}: {safe_str_exception(e)}",
+            extra={
+                "agent_id": payload.agent_id,
+                "user_id": payload.user_id,
+                "error_type": e.__class__.__name__,
+            },
+        )
+        # Retorna mensagem genérica ao cliente (sem detalhes internos)
         raise HTTPException(
             status_code=500,
-            detail=f"Erro ao executar agente: {str(e)}",
+            detail="Erro ao executar agente. Nossa equipe foi notificada.",
         )
 
 
@@ -128,9 +155,12 @@ async def _invoke_langgraph_agent(
 
 
 @router.post("/stream")
-async def stream_agent(payload: AgentInvokeRequest):
+@limiter.limit("5/minute")  # 5 requests por minuto - streaming é custoso
+async def stream_agent(request: Request, payload: AgentInvokeRequest):
     """
     Stream de resposta do agente.
+
+    Rate limit: 5 requests/minuto por IP
 
     TODO: Implementar streaming com Server-Sent Events (SSE)
     """

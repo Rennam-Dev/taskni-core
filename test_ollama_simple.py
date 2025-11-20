@@ -1,6 +1,7 @@
 """
 Teste simples de conexão com Ollama.
 """
+
 import os
 
 # Configura variáveis de ambiente diretamente
@@ -38,10 +39,7 @@ try:
     with httpx.Client(timeout=10.0, verify=False) as client:
         response = client.post(
             "https://apiollama.rennam.dev/api/embeddings",
-            json={
-                "model": "nomic-embed-text",
-                "prompt": "Hello, this is a test from Taskni Core"
-            }
+            json={"model": "nomic-embed-text", "prompt": "Hello, this is a test from Taskni Core"},
         )
         print(f"Status: {response.status_code}")
         if response.status_code == 200:
@@ -64,4 +62,5 @@ except ImportError:
 except Exception as e:
     print(f"❌ Erro: {e}")
     import traceback
+
     traceback.print_exc()
