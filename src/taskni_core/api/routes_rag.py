@@ -14,8 +14,8 @@ import tempfile
 
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel, Field
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from slowapi import Limiter  # type: ignore
+from slowapi.util import get_remote_address  # type: ignore
 
 from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.schema.metadata_schemas import DocumentMetadata

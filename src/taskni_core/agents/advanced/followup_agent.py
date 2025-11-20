@@ -106,7 +106,7 @@ class FollowupAgent:
         workflow.add_edge("schedule_send", END)
 
         # Compila o grafo
-        return workflow.compile()
+        return workflow.compile() # type: ignore
 
     def _detect_intent(self, state: FollowupState) -> FollowupState:
         """
@@ -431,11 +431,11 @@ Mensagem:"""
 
     async def run(
         self,
-        patient_name: str = None,
-        days_inactive: int = None,
+        patient_name: str | None = None,
+        days_inactive: int | None = None,
         last_message: str = "",
-        context: dict = None,
-        input_data: "FollowupInput" = None,
+        context: dict | None = None,
+        input_data: "FollowupInput | None" = None,
     ) -> dict:
         """
         Executa o agente de followup.
@@ -484,7 +484,7 @@ Mensagem:"""
         }
 
         # Executa o grafo
-        final_state = await self.graph.ainvoke(initial_state)
+        final_state = await self.graph.ainvoke(initial_state) # type: ignore
 
         print(f"{'=' * 80}\n")
 
@@ -501,7 +501,7 @@ Mensagem:"""
         patient_name: str,
         days_inactive: int,
         last_message: str = "",
-        context: dict = None,
+        context: dict | None = None,
     ) -> dict:
         """Versão síncrona do run() para compatibilidade."""
         import asyncio

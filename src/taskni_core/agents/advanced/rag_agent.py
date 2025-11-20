@@ -113,7 +113,7 @@ class FaqRagAgent:
         workflow.add_edge("generate", END)
 
         # Compila o grafo
-        return workflow.compile()
+        return workflow.compile() # type: ignore
 
     def _retrieve_documents(self, state: RagState) -> RagState:
         """
@@ -198,7 +198,7 @@ class FaqRagAgent:
         ]
 
         # Gera resposta
-        response = self.llm.invoke_sync(messages_dict)
+        response = self.llm.invoke_sync(messages_dict) # type: ignore
 
         print("   ✅ Resposta gerada")
 
@@ -206,7 +206,7 @@ class FaqRagAgent:
         return {
             **state,
             "answer": response,
-            "messages": state.get("messages", [])
+            "messages": state.get("messages", []) # type: ignore
             + [
                 HumanMessage(content=question),
                 AIMessage(content=response),
@@ -365,7 +365,7 @@ Responda em {language}."""
         }
 
         # Executa o grafo
-        final_state = await self.graph.ainvoke(initial_state)
+        final_state = await self.graph.ainvoke(initial_state) # type: ignore
 
         # Salva no cache
         self._save_to_cache(

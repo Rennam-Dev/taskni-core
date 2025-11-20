@@ -206,7 +206,7 @@ def register_taskni_agents():
     # Billing Agent
     if taskni_settings.ENABLE_BILLING_AGENT:
         try:
-            from taskni_core.agents.billing_agent import BillingAgent
+            from taskni_core.agents.billing_agent import BillingAgent  # type: ignore
 
             agent_registry.register(
                 agent=BillingAgent(),

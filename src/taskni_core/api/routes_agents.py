@@ -9,8 +9,8 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 from langgraph.graph.state import CompiledStateGraph
-from slowapi import Limiter
-from slowapi.util import get_remote_address
+from slowapi import Limiter  # type: ignore
+from slowapi.util import get_remote_address  # type: ignore
 
 from taskni_core.agents.base import BaseAgent
 from taskni_core.agents.registry import agent_registry
