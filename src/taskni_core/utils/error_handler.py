@@ -7,11 +7,11 @@ em respostas de erro da API.
 
 import logging
 import traceback
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import Request, status
-from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 logger = logging.getLogger(__name__)
@@ -41,7 +41,7 @@ class SafeErrorResponse:
         public_message: str | None = None,
         internal_details: str | None = None,
         error_code: str | None = None,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Cria um dicionário de resposta de erro seguro.
 
