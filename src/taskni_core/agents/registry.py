@@ -9,7 +9,7 @@ Isso permite começar com agentes simples e evoluir para LangGraph
 conforme a complexidade aumenta.
 """
 
-from typing import Any, Dict, Union
+from typing import Any
 
 from langgraph.graph.state import CompiledStateGraph
 
@@ -17,7 +17,7 @@ from taskni_core.agents.base import BaseAgent
 from taskni_core.core.settings import taskni_settings
 
 # Type alias para aceitar ambos os tipos
-AgentType = Union[BaseAgent, CompiledStateGraph]
+AgentType = BaseAgent | CompiledStateGraph
 
 
 class AgentRegistry:
@@ -29,8 +29,8 @@ class AgentRegistry:
     """
 
     def __init__(self):
-        self._agents: Dict[str, AgentType] = {}
-        self._metadata: Dict[str, Dict[str, Any]] = {}
+        self._agents: dict[str, AgentType] = {}
+        self._metadata: dict[str, dict[str, Any]] = {}
 
     def register(
         self,
@@ -95,7 +95,7 @@ class AgentRegistry:
 
         return self._agents[agent_id]
 
-    def list_agents(self, include_disabled: bool = False) -> list[Dict[str, Any]]:
+    def list_agents(self, include_disabled: bool = False) -> list[dict[str, Any]]:
         """
         Lista todos os agentes registrados.
 
@@ -133,7 +133,7 @@ def get_agent(agent_id: str) -> AgentType:
     return agent_registry.get(agent_id)
 
 
-def list_agents(include_disabled: bool = False) -> list[Dict[str, Any]]:
+def list_agents(include_disabled: bool = False) -> list[dict[str, Any]]:
     """Helper function para listar agentes."""
     return agent_registry.list_agents(include_disabled)
 

@@ -13,7 +13,8 @@ import sys
 sys.path.insert(0, "/home/user/taskni-core/src")
 
 from pydantic import ValidationError
-from taskni_core.schema.agent_inputs import FollowupInput, RagQueryInput, IntakeInput
+
+from taskni_core.schema.agent_inputs import FollowupInput, IntakeInput, RagQueryInput
 
 print("=" * 80)
 print("🧪 TESTE DE VALIDAÇÃO PYDANTIC")
@@ -36,7 +37,7 @@ def test_followup_input_valid():
 
     try:
         input_obj = FollowupInput(**data)
-        print(f"\n✅ Input válido aceito:")
+        print("\n✅ Input válido aceito:")
         print(f"   - Nome: {input_obj.patient_name}")
         print(f"   - Dias: {input_obj.days_inactive}")
         print(f"   - Mensagem: {input_obj.last_message}")
@@ -59,11 +60,11 @@ def test_followup_input_invalid_days():
     }
 
     try:
-        input_obj = FollowupInput(**data)
-        print(f"\n❌ Input inválido aceito (deveria rejeitar)")
+        FollowupInput(**data)
+        print("\n❌ Input inválido aceito (deveria rejeitar)")
         return False
     except ValidationError as e:
-        print(f"\n✅ Input inválido rejeitado corretamente:")
+        print("\n✅ Input inválido rejeitado corretamente:")
         print(f"   Erro: {e.errors()[0]['msg']}")
         return True
 
@@ -80,11 +81,11 @@ def test_followup_input_empty_name():
     }
 
     try:
-        input_obj = FollowupInput(**data)
-        print(f"\n❌ Nome vazio aceito (deveria rejeitar)")
+        FollowupInput(**data)
+        print("\n❌ Nome vazio aceito (deveria rejeitar)")
         return False
     except ValidationError as e:
-        print(f"\n✅ Nome vazio rejeitado corretamente:")
+        print("\n✅ Nome vazio rejeitado corretamente:")
         print(f"   Erro: {e.errors()[0]['msg']}")
         return True
 
@@ -101,11 +102,11 @@ def test_followup_input_missing_required():
     }
 
     try:
-        input_obj = FollowupInput(**data)
-        print(f"\n❌ Campo obrigatório faltando aceito (deveria rejeitar)")
+        FollowupInput(**data)
+        print("\n❌ Campo obrigatório faltando aceito (deveria rejeitar)")
         return False
     except ValidationError as e:
-        print(f"\n✅ Campo obrigatório faltando rejeitado:")
+        print("\n✅ Campo obrigatório faltando rejeitado:")
         print(f"   Erro: {e.errors()[0]['msg']}")
         return True
 
@@ -120,7 +121,7 @@ def test_rag_query_input_valid():
 
     try:
         input_obj = RagQueryInput(**data)
-        print(f"\n✅ Input válido aceito:")
+        print("\n✅ Input válido aceito:")
         print(f"   - Pergunta: {input_obj.question}")
         print(f"   - K docs: {input_obj.k_documents}")
         return True
@@ -141,11 +142,11 @@ def test_rag_query_input_k_out_of_range():
     }
 
     try:
-        input_obj = RagQueryInput(**data)
-        print(f"\n❌ K fora do range aceito (deveria rejeitar)")
+        RagQueryInput(**data)
+        print("\n❌ K fora do range aceito (deveria rejeitar)")
         return False
     except ValidationError as e:
-        print(f"\n✅ K fora do range rejeitado:")
+        print("\n✅ K fora do range rejeitado:")
         print(f"   Erro: {e.errors()[0]['msg']}")
         return True
 
@@ -164,7 +165,7 @@ def test_intake_input_valid():
 
     try:
         input_obj = IntakeInput(**data)
-        print(f"\n✅ Input válido aceito:")
+        print("\n✅ Input válido aceito:")
         print(f"   - Mensagem: {input_obj.message}")
         print(f"   - User ID: {input_obj.user_id}")
         return True
@@ -202,13 +203,13 @@ def main():
         print(f"  {status} {name}")
 
     if passed == total:
-        print(f"\n🎉 TODOS OS TESTES DE VALIDAÇÃO PASSARAM!")
-        print(f"\n✅ Sistema de validação Pydantic funcionando:")
-        print(f"   - Inputs válidos são aceitos")
-        print(f"   - Inputs inválidos são rejeitados")
-        print(f"   - Mensagens de erro claras")
+        print("\n🎉 TODOS OS TESTES DE VALIDAÇÃO PASSARAM!")
+        print("\n✅ Sistema de validação Pydantic funcionando:")
+        print("   - Inputs válidos são aceitos")
+        print("   - Inputs inválidos são rejeitados")
+        print("   - Mensagens de erro claras")
     else:
-        print(f"\n⚠️  Alguns testes falharam")
+        print("\n⚠️  Alguns testes falharam")
 
     print("=" * 80)
 

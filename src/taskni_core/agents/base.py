@@ -9,7 +9,7 @@ use diretamente LangGraph e registre no registry.
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any
 
 
 class BaseAgent(ABC):
@@ -27,7 +27,7 @@ class BaseAgent(ABC):
     description: str
 
     @abstractmethod
-    async def run(self, message: str, context: Dict[str, Any]) -> str:
+    async def run(self, message: str, context: dict[str, Any]) -> str:
         """
         Executa o agente com uma mensagem e contexto.
 
@@ -40,7 +40,7 @@ class BaseAgent(ABC):
         """
         ...
 
-    def get_info(self) -> Dict[str, str]:
+    def get_info(self) -> dict[str, str]:
         """Retorna informações sobre o agente."""
         return {
             "id": self.id,

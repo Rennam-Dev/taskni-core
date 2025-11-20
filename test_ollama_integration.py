@@ -15,13 +15,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent / "src"))
 
 import os
+
 from dotenv import load_dotenv
 
 # Carrega .env
 load_dotenv()
 
-from taskni_core.rag.ingest import DocumentIngestion
-from taskni_core.core.settings import taskni_settings
+from taskni_core.core.settings import taskni_settings  # noqa: E402
+from taskni_core.rag.ingest import DocumentIngestion  # noqa: E402
 
 
 def test_ollama_connection():
@@ -71,17 +72,17 @@ def test_text_ingestion():
             text=test_text, metadata={"source": "test", "category": "faq"}
         )
 
-        print(f"\n✅ Texto ingerido com sucesso!")
+        print("\n✅ Texto ingerido com sucesso!")
         print(f"   Chunks criados: {num_chunks}")
 
         # Testa busca
         results = pipeline.search("Qual o horário de funcionamento?", k=2)
-        print(f"\n🔍 Teste de busca:")
-        print(f"   Query: 'Qual o horário de funcionamento?'")
+        print("\n🔍 Teste de busca:")
+        print("   Query: 'Qual o horário de funcionamento?'")
         print(f"   Resultados encontrados: {len(results)}")
 
         if results:
-            print(f"\n📄 Primeiro resultado:")
+            print("\n📄 Primeiro resultado:")
             print(f"   {results[0].page_content[:200]}...")
 
         return True
@@ -116,7 +117,7 @@ def test_pdf_ingestion():
             file_path=pdf_path, metadata={"source": "test_pdf", "category": "documentation"}
         )
 
-        print(f"\n✅ PDF ingerido com sucesso!")
+        print("\n✅ PDF ingerido com sucesso!")
         print(f"   Chunks criados: {num_chunks}")
 
         return True
@@ -167,12 +168,12 @@ def test_rag_agent():
         # Testa busca no retriever
         results = pipeline.search("Como faço para agendar?", k=3)
 
-        print(f"\n🔍 Teste de retrieval:")
-        print(f"   Query: 'Como faço para agendar?'")
+        print("\n🔍 Teste de retrieval:")
+        print("   Query: 'Como faço para agendar?'")
         print(f"   Documentos encontrados: {len(results)}")
 
         if results:
-            print(f"\n📄 Melhor resultado:")
+            print("\n📄 Melhor resultado:")
             print(f"   {results[0].page_content[:300]}...")
 
         return True
@@ -212,7 +213,7 @@ def test_embeddings_endpoint():
                 data = response.json()
                 embedding = data.get("embedding", [])
 
-                print(f"\n✅ Endpoint funcionando!")
+                print("\n✅ Endpoint funcionando!")
                 print(f"   Status: {response.status_code}")
                 print(f"   Dimensões do embedding: {len(embedding)}")
                 print(f"   Primeiros 5 valores: {embedding[:5]}")

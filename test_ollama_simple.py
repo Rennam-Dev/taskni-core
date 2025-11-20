@@ -12,8 +12,8 @@ try:
     import httpx
 
     print("🧪 Testando conexão com Ollama...")
-    print(f"📍 Endpoint: https://apiollama.rennam.dev")
-    print(f"📦 Modelo: nomic-embed-text")
+    print("📍 Endpoint: https://apiollama.rennam.dev")
+    print("📦 Modelo: nomic-embed-text")
     print()
 
     # Teste 1: /api/tags
@@ -45,7 +45,7 @@ try:
         if response.status_code == 200:
             data = response.json()
             embedding = data.get("embedding", [])
-            print(f"✅ Embedding gerado com sucesso!")
+            print("✅ Embedding gerado com sucesso!")
             print(f"   Dimensões: {len(embedding)}")
             print(f"   Primeiros 5 valores: {embedding[:5]}")
         else:

@@ -6,7 +6,7 @@ Testa todas as APIs de LLM configuradas e mostra quais estão funcionando.
 """
 
 import os
-import sys
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -38,7 +38,7 @@ if groq_key:
     except Exception as e:
         error = str(e)
         if "Access denied" in error:
-            print(f"   ❌ GROQ: Access denied (outage Cloudflare)")
+            print("   ❌ GROQ: Access denied (outage Cloudflare)")
             results.append(("Groq", "❌ Indisponível", "Cloudflare outage"))
         else:
             print(f"   ❌ GROQ: {error[:60]}...")
@@ -88,8 +88,8 @@ if ollama_model:
     except Exception as e:
         error = str(e)
         if "Connection" in error or "connect" in error:
-            print(f"   ❌ OLLAMA: Servidor não está rodando")
-            print(f"      Execute: ollama serve")
+            print("   ❌ OLLAMA: Servidor não está rodando")
+            print("      Execute: ollama serve")
             results.append(("Ollama", "❌ Servidor offline", "Execute: ollama serve"))
         else:
             print(f"   ❌ OLLAMA: {error[:60]}...")
@@ -175,32 +175,32 @@ if working_providers:
 
     # Recomenda o melhor
     if "Google Gemini" in working_providers:
-        print(f"\n🎯 RECOMENDADO: Use Google Gemini (gratuito, rápido, confiável)")
-        print(f"   Configure no .env:")
-        print(f"   DEFAULT_MODEL=gemini-2.0-flash")
+        print("\n🎯 RECOMENDADO: Use Google Gemini (gratuito, rápido, confiável)")
+        print("   Configure no .env:")
+        print("   DEFAULT_MODEL=gemini-2.0-flash")
     elif "Groq" in working_providers:
-        print(f"\n🎯 RECOMENDADO: Use Groq (muito rápido)")
-        print(f"   Configure no .env:")
-        print(f"   DEFAULT_MODEL=llama-3.1-8b")
+        print("\n🎯 RECOMENDADO: Use Groq (muito rápido)")
+        print("   Configure no .env:")
+        print("   DEFAULT_MODEL=llama-3.1-8b")
     elif "Ollama" in working_providers:
-        print(f"\n🎯 RECOMENDADO: Use Ollama (local, sem limites)")
-        print(f"   Configure no .env:")
-        print(f"   DEFAULT_MODEL=ollama")
+        print("\n🎯 RECOMENDADO: Use Ollama (local, sem limites)")
+        print("   Configure no .env:")
+        print("   DEFAULT_MODEL=ollama")
     elif "OpenRouter" in working_providers:
-        print(f"\n🎯 RECOMENDADO: Use OpenRouter")
-        print(f"   Configure no .env:")
-        print(f"   DEFAULT_MODEL=google/gemini-2.5-flash")
+        print("\n🎯 RECOMENDADO: Use OpenRouter")
+        print("   Configure no .env:")
+        print("   DEFAULT_MODEL=google/gemini-2.5-flash")
 else:
-    print(f"\n⚠️  Nenhum provider está funcionando!")
-    print(f"\n📝 AÇÕES RECOMENDADAS:")
-    print(f"   1. Configure Google Gemini (mais fácil e gratuito):")
-    print(f"      - Obtenha key em: https://aistudio.google.com/apikey")
-    print(f"      - Adicione no .env: GOOGLE_API_KEY=sua_chave")
-    print(f"   ")
-    print(f"   2. OU instale Ollama (local, sem limites):")
-    print(f"      - curl -fsSL https://ollama.com/install.sh | sh")
-    print(f"      - ollama pull llama3.2")
-    print(f"      - Adicione no .env: OLLAMA_MODEL=llama3.2")
+    print("\n⚠️  Nenhum provider está funcionando!")
+    print("\n📝 AÇÕES RECOMENDADAS:")
+    print("   1. Configure Google Gemini (mais fácil e gratuito):")
+    print("      - Obtenha key em: https://aistudio.google.com/apikey")
+    print("      - Adicione no .env: GOOGLE_API_KEY=sua_chave")
+    print("   ")
+    print("   2. OU instale Ollama (local, sem limites):")
+    print("      - curl -fsSL https://ollama.com/install.sh | sh")
+    print("      - ollama pull llama3.2")
+    print("      - Adicione no .env: OLLAMA_MODEL=llama3.2")
 
 print("\n" + "=" * 70)
 print("📚 Veja SETUP_FREE_LLMS.md para mais detalhes")

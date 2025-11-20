@@ -6,7 +6,6 @@ Implementa autenticação via Bearer token simples mas segura.
 
 import logging
 import secrets
-from typing import Optional
 
 from fastapi import HTTPException, Security, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -32,7 +31,7 @@ class AuthManager:
     - Desabilitação (se nenhum token configurado)
     """
 
-    def __init__(self, api_token: Optional[str] = None, api_tokens: Optional[str] = None):
+    def __init__(self, api_token: str | None = None, api_tokens: str | None = None):
         """
         Inicializa o gerenciador de autenticação.
 
@@ -83,7 +82,7 @@ class AuthManager:
         return False
 
     def require_auth(
-        self, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
+        self, credentials: HTTPAuthorizationCredentials | None = Security(security_scheme)
     ) -> None:
         """
         Dependency do FastAPI que requer autenticação.
@@ -125,7 +124,7 @@ class AuthManager:
         logger.debug(f"✅ Acesso autorizado com token: {token[:10]}...")
 
     async def require_auth_async(
-        self, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
+        self, credentials: HTTPAuthorizationCredentials | None = Security(security_scheme)
     ) -> None:
         """Versão async do require_auth (mesma lógica)."""
         self.require_auth(credentials)

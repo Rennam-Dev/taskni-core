@@ -5,7 +5,6 @@ Define os payloads de /invoke, /stream e outras rotas de agentes.
 """
 
 from datetime import datetime
-from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, Field
 
@@ -21,11 +20,9 @@ class AgentInvokeRequest(BaseModel):
 
     agent_id: str = Field(..., description="ID do agente a ser invocado")
     message: str = Field(..., description="Mensagem do usuário")
-    user_id: Optional[str] = Field(None, description="ID do usuário/paciente")
-    session_id: Optional[str] = Field(None, description="ID da sessão/conversa")
-    thread_id: Optional[str] = Field(
-        None, description="ID do thread (para continuidade de conversas)"
-    )
+    user_id: str | None = Field(None, description="ID do usuário/paciente")
+    session_id: str | None = Field(None, description="ID da sessão/conversa")
+    thread_id: str | None = Field(None, description="ID do thread (para continuidade de conversas)")
     metadata: RequestMetadata = Field(
         default_factory=RequestMetadata,
         description="Metadados validados (source, phone, email, etc)",
@@ -56,8 +53,8 @@ class AgentInvokeResponse(BaseModel):
 
     agent_id: str = Field(..., description="ID do agente que processou")
     reply: str = Field(..., description="Resposta do agente")
-    session_id: Optional[str] = Field(None, description="ID da sessão")
-    thread_id: Optional[str] = Field(None, description="ID do thread")
+    session_id: str | None = Field(None, description="ID da sessão")
+    thread_id: str | None = Field(None, description="ID do thread")
     metadata: ResponseMetadata = Field(
         default_factory=ResponseMetadata,
         description="Metadados validados (tokens, tempo, modelo usado, etc)",
@@ -94,9 +91,9 @@ class AgentStreamRequest(BaseModel):
 
     agent_id: str = Field(..., description="ID do agente a ser invocado")
     message: str = Field(..., description="Mensagem do usuário")
-    user_id: Optional[str] = Field(None, description="ID do usuário/paciente")
-    session_id: Optional[str] = Field(None, description="ID da sessão/conversa")
-    thread_id: Optional[str] = Field(None, description="ID do thread")
+    user_id: str | None = Field(None, description="ID do usuário/paciente")
+    session_id: str | None = Field(None, description="ID da sessão/conversa")
+    thread_id: str | None = Field(None, description="ID do thread")
     metadata: RequestMetadata = Field(
         default_factory=RequestMetadata, description="Metadados validados"
     )

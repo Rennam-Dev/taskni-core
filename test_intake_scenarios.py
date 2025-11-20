@@ -6,6 +6,7 @@ Simula diferentes situações de atendimento inicial.
 """
 
 import json
+
 import requests
 
 BASE_URL = "http://localhost:8080"
@@ -16,7 +17,7 @@ def test_agent(test_name: str, message: str, user_id: str, metadata: dict = None
     print(f"\n{'=' * 70}")
     print(f"🧪 {test_name}")
     print(f"{'=' * 70}")
-    print(f"📥 Entrada:")
+    print("📥 Entrada:")
     print(f"   Mensagem: {message}")
     print(f"   User ID: {user_id}")
     if metadata:
@@ -35,7 +36,7 @@ def test_agent(test_name: str, message: str, user_id: str, metadata: dict = None
 
     if response.status_code == 200:
         data = response.json()
-        print(f"\n📤 Resposta do Agente:")
+        print("\n📤 Resposta do Agente:")
         print(f"   {'-' * 66}")
         print(f"   {data['reply']}")
         print(f"   {'-' * 66}")

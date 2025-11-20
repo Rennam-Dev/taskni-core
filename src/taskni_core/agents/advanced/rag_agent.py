@@ -8,21 +8,21 @@ Usa LangGraph para implementar um workflow de:
 Este é um agente AVANÇADO (usa LangGraph completo).
 """
 
-from typing import List, TypedDict, Annotated, Sequence, Dict, Any
-from operator import add
-from collections import OrderedDict
 import hashlib
+from collections import OrderedDict
+from collections.abc import Sequence
+from operator import add
+from typing import Annotated, Any, TypedDict
 
-from langgraph.graph import StateGraph, END
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_core.documents import Document
+from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from langgraph.graph import END, StateGraph
 
 from taskni_core.core.llm_provider import MultiProviderLLM
-from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.core.settings import taskni_settings
+from taskni_core.rag.ingest import get_ingestion_pipeline
 from taskni_core.utils.security import sanitize_prompt_input
-
 
 # ============================================================================
 # State Definition
@@ -43,10 +43,10 @@ class RagState(TypedDict):
     """
 
     question: str
-    retrieved_docs: List[Document]
+    retrieved_docs: list[Document]
     context: str
     answer: str
-    sources: List[str]
+    sources: list[str]
     messages: Annotated[Sequence[BaseMessage], add]
 
 
@@ -93,7 +93,7 @@ class FaqRagAgent:
 
         # Cache para respostas (FIFO com OrderedDict)
         # Estrutura: {cache_key: {"answer": str, "sources": List[str]}}
-        self.cache: OrderedDict[str, Dict[str, Any]] = OrderedDict()
+        self.cache: OrderedDict[str, dict[str, Any]] = OrderedDict()
 
         # Constrói o grafo LangGraph
         self.graph = self._build_graph()
@@ -173,7 +173,7 @@ class FaqRagAgent:
         question = state["question"]
         context = state["context"]
 
-        print(f"🤖 Gerando resposta...")
+        print("🤖 Gerando resposta...")
 
         # Template do prompt
         prompt_template = ChatPromptTemplate.from_messages(
@@ -200,7 +200,7 @@ class FaqRagAgent:
         # Gera resposta
         response = self.llm.invoke_sync(messages_dict)
 
-        print(f"   ✅ Resposta gerada")
+        print("   ✅ Resposta gerada")
 
         # Atualiza estado
         return {
@@ -258,7 +258,7 @@ Responda em {language}."""
         # Gera hash MD5
         return hashlib.md5(normalized.encode()).hexdigest()
 
-    def _get_from_cache(self, question: str) -> Dict[str, Any] | None:
+    def _get_from_cache(self, question: str) -> dict[str, Any] | None:
         """
         Busca resposta no cache.
 
@@ -278,7 +278,7 @@ Responda em {language}."""
 
         return None
 
-    def _save_to_cache(self, question: str, answer: str, sources: List[str]):
+    def _save_to_cache(self, question: str, answer: str, sources: list[str]):
         """
         Salva resposta no cache.
 
@@ -294,7 +294,7 @@ Responda em {language}."""
             # Remove primeiro item (mais antigo)
             oldest_key = next(iter(self.cache))
             self.cache.pop(oldest_key)
-            print(f"   🗑️  Cache cheio: removendo entrada antiga")
+            print("   🗑️  Cache cheio: removendo entrada antiga")
 
         # Adiciona ao cache
         self.cache[cache_key] = {
@@ -304,7 +304,7 @@ Responda em {language}."""
 
         print(f"   💾 Resposta salva no cache ({len(self.cache)}/{self.cache_size})")
 
-    def get_cache_stats(self) -> Dict[str, int]:
+    def get_cache_stats(self) -> dict[str, int]:
         """
         Retorna estatísticas do cache.
 
@@ -319,7 +319,7 @@ Responda em {language}."""
     def clear_cache(self):
         """Limpa todo o cache."""
         self.cache.clear()
-        print(f"   🗑️  Cache limpo")
+        print("   🗑️  Cache limpo")
 
     async def run(self, question: str) -> dict:
         """
@@ -332,7 +332,7 @@ Responda em {language}."""
             Dict com answer, sources, retrieved_docs, cached
         """
         print(f"\n{'=' * 80}")
-        print(f"🤖 FaqRagAgent: Processando pergunta")
+        print("🤖 FaqRagAgent: Processando pergunta")
         print(f"{'=' * 80}")
 
         # SANITIZA O INPUT PARA PREVENIR PROMPT INJECTION
@@ -352,7 +352,7 @@ Responda em {language}."""
             }
 
         # Não está no cache - executa workflow normal
-        print(f"   🔄 Cache miss - executando workflow RAG...")
+        print("   🔄 Cache miss - executando workflow RAG...")
 
         # Estado inicial
         initial_state = {

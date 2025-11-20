@@ -5,7 +5,7 @@ Endpoints para listar, invocar e fazer stream de agentes.
 """
 
 import logging
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, Request
 from langgraph.graph.state import CompiledStateGraph
@@ -120,7 +120,7 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
 async def _invoke_langgraph_agent(
     agent: CompiledStateGraph,
     message: str,
-    context: Dict[str, Any],
+    context: dict[str, Any],
 ) -> str:
     """
     Invoca um agente LangGraph.

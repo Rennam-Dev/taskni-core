@@ -8,13 +8,13 @@ Testa:
 3. IntakeAgent com o novo sistema
 """
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
-from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.agents.intake_agent import IntakeAgent
+from taskni_core.core.llm_provider import MultiProviderLLM
 
 print("=" * 80)
 print("🧪 TESTE DO SISTEMA MULTI-PROVEDOR COM STREAMING")
@@ -37,7 +37,7 @@ async def test_multi_provider_direct():
         {"role": "user", "content": "Diga olá em português de forma breve."},
     ]
 
-    print(f"\n💬 Enviando mensagem: 'Diga olá em português de forma breve.'")
+    print("\n💬 Enviando mensagem: 'Diga olá em português de forma breve.'")
 
     try:
         response = await llm.ainvoke(messages)
@@ -47,7 +47,7 @@ async def test_multi_provider_direct():
         else:
             reply = str(response)
 
-        print(f"\n✅ RESPOSTA RECEBIDA:")
+        print("\n✅ RESPOSTA RECEBIDA:")
         print(f"{'=' * 80}")
         print(reply)
         print(f"{'=' * 80}")
@@ -70,7 +70,7 @@ async def test_multi_provider_streaming():
 
     llm = MultiProviderLLM(enable_streaming=True)
 
-    print(f"\n✅ Streaming habilitado")
+    print("\n✅ Streaming habilitado")
     print(f"📍 Provedor primário: {llm.get_current_provider()}")
 
     messages = [
@@ -78,8 +78,8 @@ async def test_multi_provider_streaming():
         {"role": "user", "content": "Conte de 1 até 5, um número por linha."},
     ]
 
-    print(f"\n💬 Enviando mensagem para streaming...")
-    print(f"\n✅ RESPOSTA (STREAMING):")
+    print("\n💬 Enviando mensagem para streaming...")
+    print("\n✅ RESPOSTA (STREAMING):")
     print(f"{'=' * 80}")
 
     try:
@@ -114,12 +114,12 @@ async def test_intake_agent_with_multi_provider():
     print(f"📄 Descrição: {agent.description}")
 
     # Verifica se está usando MultiProviderLLM
-    print(f"\n🔍 Verificando tipo do LLM...")
+    print("\n🔍 Verificando tipo do LLM...")
     print(f"   Tipo: {type(agent.llm).__name__}")
     print(f"   Provedores disponíveis: {agent.llm.get_available_providers()}")
 
     # Testa conversação
-    print(f"\n💬 Testando conversação de triagem...")
+    print("\n💬 Testando conversação de triagem...")
 
     message = "Olá, bom dia! Gostaria de agendar uma consulta"
     context = {
@@ -128,9 +128,9 @@ async def test_intake_agent_with_multi_provider():
         "metadata": {"source": "whatsapp", "phone": "+5511987654321"},
     }
 
-    print(f"\n📤 Mensagem do paciente:")
+    print("\n📤 Mensagem do paciente:")
     print(f"   '{message}'")
-    print(f"\n📋 Contexto:")
+    print("\n📋 Contexto:")
     print(f"   - user_id: {context['user_id']}")
     print(f"   - source: {context['metadata']['source']}")
     print(f"   - phone: {context['metadata']['phone']}")
@@ -138,7 +138,7 @@ async def test_intake_agent_with_multi_provider():
     try:
         reply = await agent.run(message=message, context=context)
 
-        print(f"\n✅ RESPOSTA DO AGENTE:")
+        print("\n✅ RESPOSTA DO AGENTE:")
         print(f"{'=' * 80}")
         print(reply)
         print(f"{'=' * 80}")
@@ -159,10 +159,10 @@ async def test_fallback_mechanism():
     print("📋 TESTE 4: Mecanismo de Fallback")
     print("=" * 80)
 
-    print(f"\n📝 Neste teste, vamos tentar invocar o LLM.")
-    print(f"   Se Groq falhar (403), deve tentar OpenAI.")
-    print(f"   Se OpenAI falhar, deve usar FakeModel.")
-    print(f"\n🔄 Iniciando teste de fallback...")
+    print("\n📝 Neste teste, vamos tentar invocar o LLM.")
+    print("   Se Groq falhar (403), deve tentar OpenAI.")
+    print("   Se OpenAI falhar, deve usar FakeModel.")
+    print("\n🔄 Iniciando teste de fallback...")
 
     llm = MultiProviderLLM(enable_streaming=False)
 
@@ -176,7 +176,7 @@ async def test_fallback_mechanism():
         else:
             reply = str(response)
 
-        print(f"\n✅ Sistema de fallback funcionou!")
+        print("\n✅ Sistema de fallback funcionou!")
         print(f"📤 Resposta recebida: {reply[:100]}...")
 
         return True
@@ -213,21 +213,21 @@ async def main():
     passed = sum(1 for v in results.values() if v)
 
     print(f"\n✅ Testes passaram: {passed}/{total}")
-    print(f"\nDetalhes:")
+    print("\nDetalhes:")
     print(f"  {'✅' if results.get('test1') else '❌'} Teste 1: MultiProviderLLM Direto")
     print(f"  {'✅' if results.get('test2') else '❌'} Teste 2: Streaming")
     print(f"  {'✅' if results.get('test3') else '❌'} Teste 3: IntakeAgent")
     print(f"  {'✅' if results.get('test4') else '❌'} Teste 4: Fallback Mechanism")
 
     if passed == total:
-        print(f"\n🎉 TODOS OS TESTES PASSARAM!")
-        print(f"\n✅ Sistema multi-provedor configurado com sucesso:")
-        print(f"   - Groq como primário")
-        print(f"   - OpenAI como fallback")
-        print(f"   - FakeModel como último recurso")
-        print(f"   - Streaming habilitado")
+        print("\n🎉 TODOS OS TESTES PASSARAM!")
+        print("\n✅ Sistema multi-provedor configurado com sucesso:")
+        print("   - Groq como primário")
+        print("   - OpenAI como fallback")
+        print("   - FakeModel como último recurso")
+        print("   - Streaming habilitado")
     else:
-        print(f"\n⚠️  Alguns testes falharam. Verifique os logs acima.")
+        print("\n⚠️  Alguns testes falharam. Verifique os logs acima.")
 
     print("=" * 80)
 

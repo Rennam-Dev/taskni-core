@@ -19,35 +19,35 @@ def test_auth_manager():
     # Teste 1: Auth desabilitada (sem tokens)
     print("\n✅ Teste 1: Auth desabilitada")
     auth = AuthManager()
-    assert auth.enabled == False, "Auth deveria estar desabilitada"
-    assert auth.verify_token("any_token") == True, "Deveria permitir qualquer token"
+    assert not auth.enabled, "Auth deveria estar desabilitada"
+    assert auth.verify_token("any_token"), "Deveria permitir qualquer token"
     print("   ✓ Auth desabilitada funciona")
 
     # Teste 2: Auth com token único
     print("\n✅ Teste 2: Auth com token único")
     auth = AuthManager(api_token="secret123")
-    assert auth.enabled == True, "Auth deveria estar habilitada"
-    assert auth.verify_token("secret123") == True, "Token correto deveria passar"
-    assert auth.verify_token("wrong") == False, "Token errado deveria falhar"
+    assert auth.enabled, "Auth deveria estar habilitada"
+    assert auth.verify_token("secret123"), "Token correto deveria passar"
+    assert not auth.verify_token("wrong"), "Token errado deveria falhar"
     print("   ✓ Token único funciona")
 
     # Teste 3: Auth com múltiplos tokens
     print("\n✅ Teste 3: Auth com múltiplos tokens")
     auth = AuthManager(api_tokens="token1,token2,token3")
-    assert auth.enabled == True
-    assert auth.verify_token("token1") == True
-    assert auth.verify_token("token2") == True
-    assert auth.verify_token("token3") == True
-    assert auth.verify_token("token4") == False
+    assert auth.enabled
+    assert auth.verify_token("token1")
+    assert auth.verify_token("token2")
+    assert auth.verify_token("token3")
+    assert not auth.verify_token("token4")
     print("   ✓ Múltiplos tokens funcionam")
 
     # Teste 4: Token único + múltiplos
     print("\n✅ Teste 4: Token único + múltiplos tokens")
     auth = AuthManager(api_token="main_token", api_tokens="extra1,extra2")
     assert len(auth.valid_tokens) == 3, "Deveria ter 3 tokens"
-    assert auth.verify_token("main_token") == True
-    assert auth.verify_token("extra1") == True
-    assert auth.verify_token("extra2") == True
+    assert auth.verify_token("main_token")
+    assert auth.verify_token("extra1")
+    assert auth.verify_token("extra2")
     print("   ✓ Combinação de tokens funciona")
 
     print("\n✅ TODOS OS TESTES DE AUTH PASSARAM!")
@@ -64,7 +64,7 @@ def test_error_handler():
     # Teste 1: Mensagens genéricas
     print("\n✅ Teste 1: Mensagens genéricas")
     response = SafeErrorResponse.create_error_response(500)
-    assert response["error"] == True
+    assert response["error"]
     assert "status_code" in response
     assert "interno" in response["message"].lower()
     print("   ✓ Mensagem 500 é genérica")
@@ -88,12 +88,13 @@ def test_metadata_schemas():
     print("🧪 TESTE: Metadata Schemas (Validação Tipada)")
     print("=" * 80)
 
+    from pydantic import ValidationError
+
     from taskni_core.schema.metadata_schemas import (
+        DocumentMetadata,
         RequestMetadata,
         ResponseMetadata,
-        DocumentMetadata,
     )
-    from pydantic import ValidationError
 
     # Teste 1: RequestMetadata válida
     print("\n✅ Teste 1: RequestMetadata válida")

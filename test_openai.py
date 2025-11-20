@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Teste da OpenAI API."""
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
@@ -17,8 +17,8 @@ print(f"\n✅ Agente criado: {agent.id}")
 
 
 async def test():
-    print(f"\n💬 Testando com OpenAI (gpt-4o-mini)...")
-    print(f"   Mensagem: 'Olá, gostaria de agendar uma consulta'")
+    print("\n💬 Testando com OpenAI (gpt-4o-mini)...")
+    print("   Mensagem: 'Olá, gostaria de agendar uma consulta'")
 
     reply = await agent.run(
         message="Olá, bom dia! Gostaria de agendar uma consulta",
@@ -28,7 +28,7 @@ async def test():
         },
     )
 
-    print(f"\n📤 Resposta da OpenAI:")
+    print("\n📤 Resposta da OpenAI:")
     print(f"{'=' * 70}")
     print(reply)
     print(f"{'=' * 70}")
@@ -37,7 +37,7 @@ async def test():
 
 try:
     result = asyncio.run(test())
-    print(f"\n✅ Teste concluído com sucesso!")
+    print("\n✅ Teste concluído com sucesso!")
 except Exception as e:
     print(f"\n❌ Erro: {e}")
     import traceback

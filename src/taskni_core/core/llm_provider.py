@@ -10,7 +10,7 @@ Suporta streaming e retry automático.
 """
 
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import BaseMessage
@@ -47,7 +47,7 @@ class MultiProviderLLM:
         self._providers = self._initialize_providers()
         self._current_provider_index = 0
 
-    def _initialize_providers(self) -> List[Dict[str, Any]]:
+    def _initialize_providers(self) -> list[dict[str, Any]]:
         """
         Inicializa a lista de provedores disponíveis.
 
@@ -109,7 +109,7 @@ class MultiProviderLLM:
         logger.info(f"📋 Provedores disponíveis: {[p['name'] for p in providers]}")
         return providers
 
-    def _get_llm(self, provider_info: Dict[str, Any]) -> BaseChatModel:
+    def _get_llm(self, provider_info: dict[str, Any]) -> BaseChatModel:
         """
         Obtém instância do LLM para um provedor.
 
@@ -122,7 +122,7 @@ class MultiProviderLLM:
         return get_model(provider_info["model"])
 
     async def ainvoke(
-        self, messages: List[BaseMessage] | List[Dict[str, str]], timeout: float = 30.0, **kwargs
+        self, messages: list[BaseMessage] | list[dict[str, str]], timeout: float = 30.0, **kwargs
     ) -> Any:
         """
         Invoca o LLM com fallback automático e timeout.
@@ -156,7 +156,7 @@ class MultiProviderLLM:
                 logger.info(f"✅ {provider_info['name']} respondeu com sucesso")
                 return response
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 error_msg = f"{provider_info['name']}: Timeout após {timeout}s"
                 logger.warning(f"⚠️  {error_msg}")
                 errors.append(error_msg)
@@ -172,7 +172,7 @@ class MultiProviderLLM:
         raise Exception(f"Todos os provedores falharam:\n{error_summary}")
 
     async def astream(
-        self, messages: List[BaseMessage] | List[Dict[str, str]], timeout: float = 60.0, **kwargs
+        self, messages: list[BaseMessage] | list[dict[str, str]], timeout: float = 60.0, **kwargs
     ):
         """
         Stream de respostas do LLM com fallback automático e timeout.
@@ -221,7 +221,7 @@ class MultiProviderLLM:
                 logger.info(f"✅ {provider_info['name']} stream concluído")
                 return  # Stream bem-sucedido, sai da função
 
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 error_msg = f"{provider_info['name']}: Stream timeout após {timeout}s"
                 logger.warning(f"⚠️  {error_msg}")
                 errors.append(error_msg)
@@ -236,7 +236,7 @@ class MultiProviderLLM:
         error_summary = "\n".join([f"  - {err}" for err in errors])
         raise Exception(f"Todos os provedores falharam no streaming:\n{error_summary}")
 
-    def invoke_sync(self, messages: List[BaseMessage] | List[Dict[str, str]], **kwargs) -> str:
+    def invoke_sync(self, messages: list[BaseMessage] | list[dict[str, str]], **kwargs) -> str:
         """
         Versão síncrona do ainvoke.
 
@@ -266,6 +266,6 @@ class MultiProviderLLM:
             return self._providers[0]["name"]
         return "None"
 
-    def get_available_providers(self) -> List[str]:
+    def get_available_providers(self) -> list[str]:
         """Retorna lista de providers disponíveis."""
         return [p["name"] for p in self._providers]
