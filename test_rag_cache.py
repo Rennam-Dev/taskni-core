@@ -9,8 +9,8 @@ Valida que:
 4. Normalização de perguntas funciona
 """
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
@@ -33,7 +33,7 @@ async def test_cache_miss_and_hit():
     print("\n📝 Primeira consulta (deve ser cache MISS):")
     result1 = await agent.run("Qual o horário de funcionamento?")
 
-    print(f"\nResultado 1:")
+    print("\nResultado 1:")
     print(f"  - Cached: {result1.get('cached', False)}")
     print(f"  - Resposta: {result1['answer'][:50]}...")
 
@@ -41,7 +41,7 @@ async def test_cache_miss_and_hit():
     print("\n📝 Segunda consulta (mesma pergunta - deve ser cache HIT):")
     result2 = await agent.run("Qual o horário de funcionamento?")
 
-    print(f"\nResultado 2:")
+    print("\nResultado 2:")
     print(f"  - Cached: {result2.get('cached', False)}")
     print(f"  - Resposta: {result2['answer'][:50]}...")
 
@@ -120,12 +120,12 @@ async def test_cache_fifo():
         print(f"  - '{query}' → Cache: {stats['size']}/{stats['capacity']}")
 
     # Testa se primeira foi expulsa
-    print(f"\n📝 Testando se 'Pergunta 1?' foi expulsa:")
+    print("\n📝 Testando se 'Pergunta 1?' foi expulsa:")
     result1 = await agent.run("Pergunta 1?")
     is_miss = not result1.get("cached", True)
 
     # Testa se segunda ainda está
-    print(f"📝 Testando se 'Pergunta 2?' ainda está:")
+    print("📝 Testando se 'Pergunta 2?' ainda está:")
     result2 = await agent.run("Pergunta 2?")
     is_hit = result2.get("cached", False)
 
@@ -145,7 +145,7 @@ async def test_cache_stats():
 
     # Cache vazio
     stats = agent.get_cache_stats()
-    print(f"\n📊 Cache inicial:")
+    print("\n📊 Cache inicial:")
     print(f"  - Size: {stats['size']}")
     print(f"  - Capacity: {stats['capacity']}")
 
@@ -155,7 +155,7 @@ async def test_cache_stats():
     await agent.run("Pergunta 1?")  # Repetida
 
     stats = agent.get_cache_stats()
-    print(f"\n📊 Após 3 queries (2 únicas):")
+    print("\n📊 Após 3 queries (2 únicas):")
     print(f"  - Size: {stats['size']}")
     print(f"  - Capacity: {stats['capacity']}")
 
@@ -163,7 +163,7 @@ async def test_cache_stats():
     agent.clear_cache()
     stats = agent.get_cache_stats()
 
-    print(f"\n📊 Após clear_cache():")
+    print("\n📊 Após clear_cache():")
     print(f"  - Size: {stats['size']}")
 
     is_valid = stats["size"] == 0 and stats["capacity"] == 50
@@ -199,14 +199,14 @@ async def main():
         print(f"  {status} {name}")
 
     if passed == total:
-        print(f"\n🎉 TODOS OS TESTES DE CACHE PASSARAM!")
-        print(f"\n✅ Sistema de cache funcionando:")
-        print(f"   - Cache hit/miss detectado corretamente")
-        print(f"   - Normalização de perguntas funcionando")
-        print(f"   - FIFO descartando entradas antigas")
-        print(f"   - Estatísticas precisas")
+        print("\n🎉 TODOS OS TESTES DE CACHE PASSARAM!")
+        print("\n✅ Sistema de cache funcionando:")
+        print("   - Cache hit/miss detectado corretamente")
+        print("   - Normalização de perguntas funcionando")
+        print("   - FIFO descartando entradas antigas")
+        print("   - Estatísticas precisas")
     else:
-        print(f"\n⚠️  Alguns testes falharam")
+        print("\n⚠️  Alguns testes falharam")
 
     print("=" * 80)
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 """Teste de conectividade com Groq API - Diagnóstico detalhado."""
 
-import sys
 import os
-from groq import Groq
+import sys
 
 # Carrega .env
 from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
@@ -23,7 +23,7 @@ if not api_key:
     sys.exit(1)
 
 # Tenta criar o cliente
-print(f"\n2. Criando cliente Groq...")
+print("\n2. Criando cliente Groq...")
 try:
     client = Groq(api_key=api_key)
     print("   ✅ Cliente criado com sucesso")
@@ -32,7 +32,7 @@ except Exception as e:
     sys.exit(1)
 
 # Testa modelos disponíveis
-print(f"\n3. Testando modelos disponíveis:")
+print("\n3. Testando modelos disponíveis:")
 
 models_to_test = [
     "llama-3.1-8b",

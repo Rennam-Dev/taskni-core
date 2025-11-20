@@ -9,15 +9,17 @@ Usa LangGraph para implementar um workflow de:
 Este é um agente AVANÇADO (usa LangGraph completo).
 """
 
-from typing import TypedDict, Literal
 from datetime import datetime, timedelta
+from typing import TYPE_CHECKING, TypedDict
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from taskni_core.core.llm_provider import MultiProviderLLM
 from taskni_core.core.settings import taskni_settings
 from taskni_core.utils.security import sanitize_prompt_input
 
+if TYPE_CHECKING:
+    from taskni_core.schema.agent_inputs import FollowupInput
 
 # ============================================================================
 # State Definition
@@ -128,7 +130,7 @@ class FollowupAgent:
         last_message = state.get("last_message", "").lower()
         context = state.get("context", {})
 
-        print(f"🔍 Detectando intenção...")
+        print("🔍 Detectando intenção...")
         print(f"   - Dias inativo: {days_inactive}")
         print(f"   - Última mensagem: '{last_message[:50]}...'")
 
@@ -184,7 +186,7 @@ class FollowupAgent:
         days_inactive = state["days_inactive"]
         context = state.get("context", {})
 
-        print(f"🤖 Gerando mensagem de followup...")
+        print("🤖 Gerando mensagem de followup...")
         print(f"   - Intenção: {intent}")
         print(f"   - Paciente: {patient_name}")
 
@@ -262,7 +264,7 @@ class FollowupAgent:
         intent = state["intent"]
         now = datetime.now()
 
-        print(f"📅 Preparando agendamento de envio...")
+        print("📅 Preparando agendamento de envio...")
 
         # Define horário base por intenção
         if intent == "pos_consulta":
@@ -466,7 +468,7 @@ Mensagem:"""
                 raise ValueError("patient_name and days_inactive are required")
 
         print(f"\n{'=' * 80}")
-        print(f"🤖 FollowupAgent: Processando followup")
+        print("🤖 FollowupAgent: Processando followup")
         print(f"{'=' * 80}")
 
         # Estado inicial

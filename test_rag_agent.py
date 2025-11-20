@@ -9,13 +9,13 @@ Testa:
 4. Endpoints REST
 """
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
-from taskni_core.rag.ingest import DocumentIngestion
 from taskni_core.agents.advanced.rag_agent import create_faq_rag_agent
+from taskni_core.rag.ingest import DocumentIngestion
 
 print("=" * 80)
 print("🧪 TESTE DO SISTEMA RAG")
@@ -95,7 +95,7 @@ async def test_ingestion():
 
     # Verifica estatísticas
     stats = pipeline.get_collection_stats()
-    print(f"\n📊 Estatísticas da coleção:")
+    print("\n📊 Estatísticas da coleção:")
     print(f"   - Nome: {stats['name']}")
     print(f"   - Documentos: {stats['count']}")
     print(f"   - Diretório: {stats['persist_directory']}")
@@ -128,7 +128,7 @@ async def test_retrieval(pipeline: DocumentIngestion):
             content_preview = doc.page_content[:100].replace("\n", " ")
             print(f"      {i}. {content_preview}...")
 
-    print(f"\n✅ Retrieval funcionando corretamente")
+    print("\n✅ Retrieval funcionando corretamente")
 
 
 async def test_rag_agent(pipeline: DocumentIngestion):
@@ -141,10 +141,10 @@ async def test_rag_agent(pipeline: DocumentIngestion):
     # garantir que o agente vai usar o mesmo persist_directory
     # Por enquanto, vamos apenas testar a estrutura do agente
 
-    print(f"\n🤖 Criando FaqRagAgent...")
+    print("\n🤖 Criando FaqRagAgent...")
     agent = create_faq_rag_agent(k_documents=3, enable_streaming=False)
 
-    print(f"   ✅ Agente criado:")
+    print("   ✅ Agente criado:")
     print(f"      - ID: {agent.id}")
     print(f"      - Nome: {agent.name}")
     print(f"      - Descrição: {agent.description}")
@@ -157,7 +157,7 @@ async def test_rag_agent(pipeline: DocumentIngestion):
     ]
 
     for question in questions:
-        print(f"\n" + "-" * 80)
+        print("\n" + "-" * 80)
         print(f"❓ Pergunta: {question}")
         print("-" * 80)
 
@@ -165,13 +165,13 @@ async def test_rag_agent(pipeline: DocumentIngestion):
             # Executa agente
             result = await agent.run(question)
 
-            print(f"\n✅ Resposta:")
+            print("\n✅ Resposta:")
             print(f"{'=' * 80}")
             print(result["answer"])
             print(f"{'=' * 80}")
 
             if result.get("sources"):
-                print(f"\n📚 Fontes:")
+                print("\n📚 Fontes:")
                 for source in result["sources"]:
                     print(f"   - {source}")
 
@@ -181,7 +181,7 @@ async def test_rag_agent(pipeline: DocumentIngestion):
 
             traceback.print_exc()
 
-    print(f"\n✅ FaqRagAgent testado")
+    print("\n✅ FaqRagAgent testado")
 
 
 async def test_cleanup(pipeline: DocumentIngestion):
@@ -192,7 +192,7 @@ async def test_cleanup(pipeline: DocumentIngestion):
 
     try:
         pipeline.delete_collection()
-        print(f"✅ Coleção de teste deletada")
+        print("✅ Coleção de teste deletada")
     except Exception as e:
         print(f"⚠️  Erro ao deletar: {e}")
 
@@ -218,13 +218,13 @@ async def main():
         print("\n" + "=" * 80)
         print("📊 RESUMO DOS TESTES")
         print("=" * 80)
-        print(f"\n✅ Todos os testes concluídos!")
-        print(f"\n📋 Componentes testados:")
-        print(f"  ✅ DocumentIngestion - Ingestão de textos")
-        print(f"  ✅ ChromaDB - Vector store")
-        print(f"  ✅ Retrieval - Busca de documentos similares")
-        print(f"  ✅ FaqRagAgent - Agente RAG com LangGraph")
-        print(f"\n🎉 Sistema RAG funcionando!")
+        print("\n✅ Todos os testes concluídos!")
+        print("\n📋 Componentes testados:")
+        print("  ✅ DocumentIngestion - Ingestão de textos")
+        print("  ✅ ChromaDB - Vector store")
+        print("  ✅ Retrieval - Busca de documentos similares")
+        print("  ✅ FaqRagAgent - Agente RAG com LangGraph")
+        print("\n🎉 Sistema RAG funcionando!")
         print("=" * 80)
 
     except Exception as e:

@@ -5,8 +5,8 @@ import sys
 sys.path.insert(0, "/home/user/taskni-core/src")
 
 print("1. Testando imports...")
-from taskni_core.agents.intake_agent import IntakeAgent
-from taskni_core.agents.registry import register_taskni_agents, agent_registry
+from taskni_core.agents.intake_agent import IntakeAgent  # noqa: E402
+from taskni_core.agents.registry import agent_registry, register_taskni_agents  # noqa: E402
 
 print("✅ Imports OK")
 
@@ -20,7 +20,7 @@ agents = agent_registry.list_agents()
 print(f"✅ {len(agents)} agente(s) registrado(s)")
 
 print("\n4. Testando run do agente...")
-import asyncio
+import asyncio  # noqa: E402
 
 
 async def test_agent():

@@ -11,15 +11,13 @@ Endpoints:
 import logging
 import os
 import tempfile
-from typing import Optional
 
-from fastapi import APIRouter, UploadFile, File, HTTPException, Request
-from pydantic import BaseModel
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
+from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
 from taskni_core.rag.ingest import get_ingestion_pipeline
-from taskni_core.utils.error_handler import safe_str_exception
 from taskni_core.schema.metadata_schemas import DocumentMetadata
 
 logger = logging.getLogger(__name__)
@@ -90,7 +88,7 @@ class DeleteResponse(BaseModel):
 async def upload_document(
     request: Request,
     file: UploadFile = File(...),
-    metadata: Optional[str] = None,
+    metadata: str | None = None,
 ):
     """
     Upload e ingestão de documento (PDF ou texto).

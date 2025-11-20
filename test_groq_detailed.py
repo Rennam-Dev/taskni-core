@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 """Teste específico de status da Groq API com detalhes do erro."""
 
-import sys
-from groq import Groq
-from dotenv import load_dotenv
 import os
+import sys
+
+from dotenv import load_dotenv
+from groq import Groq
 
 load_dotenv()
 
@@ -28,11 +29,11 @@ try:
     response = client.chat.completions.create(
         model="llama-3.1-8b", messages=[{"role": "user", "content": "Diga olá"}], max_tokens=10
     )
-    print(f"\n✅ SUCESSO! Groq está funcionando!")
+    print("\n✅ SUCESSO! Groq está funcionando!")
     print(f"Resposta: {response.choices[0].message.content}")
 
 except Exception as e:
-    print(f"\n❌ ERRO:")
+    print("\n❌ ERRO:")
     print(f"   Tipo: {type(e).__name__}")
     print(f"   Mensagem: {str(e)}")
 
@@ -45,7 +46,7 @@ except Exception as e:
 
     # Análise do erro
     error_str = str(e).lower()
-    print(f"\n📊 ANÁLISE:")
+    print("\n📊 ANÁLISE:")
     if "access denied" in error_str:
         print("   🔴 Access Denied - Possíveis causas:")
         print("      1. Chave sem permissão/expirada")

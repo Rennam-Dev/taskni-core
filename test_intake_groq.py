@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Teste standalone do IntakeAgent com Groq."""
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
@@ -13,19 +13,19 @@ print("=" * 60)
 print("🧪 Teste do IntakeAgent com Groq (llama-3.1-8b)")
 print("=" * 60)
 
-print(f"\n📋 Configurações:")
+print("\n📋 Configurações:")
 print(f"   BUSINESS_NAME: {taskni_settings.BUSINESS_NAME}")
 print(f"   DEFAULT_LANGUAGE: {taskni_settings.DEFAULT_LANGUAGE}")
 
-print(f"\n🤖 Criando IntakeAgent...")
+print("\n🤖 Criando IntakeAgent...")
 agent = IntakeAgent()
 print(f"   ID: {agent.id}")
 print(f"   Name: {agent.name}")
 
 
 async def test_agent():
-    print(f"\n💬 Teste 1: Primeira mensagem do paciente")
-    print(f"   Entrada: 'Olá, bom dia! Gostaria de agendar uma consulta'")
+    print("\n💬 Teste 1: Primeira mensagem do paciente")
+    print("   Entrada: 'Olá, bom dia! Gostaria de agendar uma consulta'")
 
     reply = await agent.run(
         message="Olá, bom dia! Gostaria de agendar uma consulta",
@@ -35,18 +35,18 @@ async def test_agent():
         },
     )
 
-    print(f"\n   Resposta do agente:")
+    print("\n   Resposta do agente:")
     print(f"   {'-' * 56}")
     print(f"   {reply}")
     print(f"   {'-' * 56}")
 
-    print(f"\n✅ Teste concluído com sucesso!")
+    print("\n✅ Teste concluído com sucesso!")
     return reply
 
 
-print(f"\n🚀 Executando teste assíncrono...")
+print("\n🚀 Executando teste assíncrono...")
 result = asyncio.run(test_agent())
 
 print(f"\n{'=' * 60}")
-print(f"✨ Teste finalizado!")
+print("✨ Teste finalizado!")
 print(f"{'=' * 60}")

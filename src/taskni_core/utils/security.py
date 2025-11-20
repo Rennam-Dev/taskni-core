@@ -9,7 +9,6 @@ Inclui sanitização de inputs para prevenir:
 """
 
 import re
-from typing import Optional
 
 
 def sanitize_prompt_input(text: str, max_length: int = 200, allow_multiline: bool = False) -> str:

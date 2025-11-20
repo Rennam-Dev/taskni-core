@@ -7,25 +7,25 @@ Cria o app FastAPI e integra com o Agent Service Toolkit.
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
-from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from taskni_core.agents.registry import register_taskni_agents
 from taskni_core.api.routes_agents import router as agents_router
 from taskni_core.api.routes_health import router as health_router
 from taskni_core.api.routes_rag import router as rag_router
 from taskni_core.core.settings import taskni_settings
+from taskni_core.utils.auth import AuthManager
 from taskni_core.utils.error_handler import (
+    generic_exception_handler,
     http_exception_handler,
     validation_exception_handler,
-    generic_exception_handler,
 )
-from taskni_core.utils.auth import AuthManager
 
 logger = logging.getLogger(__name__)
 

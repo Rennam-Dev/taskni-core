@@ -6,8 +6,9 @@ Para testar:
 2. Execute este script: python test_rate_limiting.py
 """
 
-import requests
 import time
+
+import requests
 
 BASE_URL = "http://localhost:8080"
 
@@ -49,7 +50,7 @@ def test_agent_invoke_rate_limit():
 
         time.sleep(0.1)  # Pequeno delay entre requests
 
-    print(f"\n📊 Resultados:")
+    print("\n📊 Resultados:")
     print(f"   ✅ Sucessos: {success_count}")
     print(f"   ⛔ Rate Limited (429): {rate_limited_count}")
 
@@ -94,7 +95,7 @@ def test_rag_upload_rate_limit():
 
         time.sleep(0.1)
 
-    print(f"\n📊 Resultados:")
+    print("\n📊 Resultados:")
     print(f"   ✅ Sucessos: {success_count}")
     print(f"   ⛔ Rate Limited (429): {rate_limited_count}")
 
@@ -143,7 +144,7 @@ def check_server():
         if response.status_code == 200:
             print("✅ Servidor está rodando!")
             return True
-    except:
+    except Exception:
         pass
 
     print("❌ Servidor não está rodando!")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 """Teste rápido do Google Gemini."""
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
@@ -17,7 +17,7 @@ print(f"\n✅ Agente criado: {agent.id}")
 
 
 async def test():
-    print(f"\n💬 Testando com mensagem real...")
+    print("\n💬 Testando com mensagem real...")
     reply = await agent.run(
         message="Olá, bom dia! Gostaria de agendar uma consulta",
         context={
@@ -25,7 +25,7 @@ async def test():
             "metadata": {"source": "whatsapp", "phone": "+5511987654321"},
         },
     )
-    print(f"\n📤 Resposta do Gemini:")
+    print("\n📤 Resposta do Gemini:")
     print(f"{'=' * 70}")
     print(reply)
     print(f"{'=' * 70}")
@@ -33,4 +33,4 @@ async def test():
 
 
 result = asyncio.run(test())
-print(f"\n✅ Teste concluído com sucesso!")
+print("\n✅ Teste concluído com sucesso!")

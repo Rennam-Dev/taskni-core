@@ -2,6 +2,7 @@
 """Teste do Gemini via API REST direta."""
 
 import os
+
 import requests
 from dotenv import load_dotenv
 
@@ -18,7 +19,7 @@ url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash
 
 payload = {"contents": [{"parts": [{"text": "Diga 'Olá' em português de forma amigável"}]}]}
 
-print(f"\n2. Enviando requisição...")
+print("\n2. Enviando requisição...")
 try:
     response = requests.post(url, json=payload, timeout=15, verify=False)
 
@@ -26,8 +27,8 @@ try:
         data = response.json()
         text = data["candidates"][0]["content"]["parts"][0]["text"]
 
-        print(f"\n✅ SUCESSO!")
-        print(f"📤 Resposta do Gemini:")
+        print("\n✅ SUCESSO!")
+        print("📤 Resposta do Gemini:")
         print(f"{'=' * 70}")
         print(text)
         print(f"{'=' * 70}")

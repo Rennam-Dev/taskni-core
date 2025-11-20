@@ -5,7 +5,8 @@ Garante que os inputs dos agentes sejam validados antes de processar,
 evitando erros em runtime e fornecendo mensagens claras de erro.
 """
 
-from typing import Dict, Any, Optional
+from typing import Any
+
 from pydantic import BaseModel, Field, field_validator
 
 
@@ -27,7 +28,7 @@ class FollowupInput(BaseModel):
         default="", max_length=1000, description="Última mensagem do paciente"
     )
 
-    context: Dict[str, Any] = Field(
+    context: dict[str, Any] = Field(
         default_factory=dict, description="Contexto adicional (clinic_type, service, etc)"
     )
 
@@ -71,7 +72,7 @@ class RagQueryInput(BaseModel):
 
     question: str = Field(..., min_length=1, max_length=500, description="Pergunta do usuário")
 
-    k_documents: Optional[int] = Field(
+    k_documents: int | None = Field(
         default=4, ge=1, le=10, description="Número de documentos a recuperar (1-10)"
     )
 
@@ -98,11 +99,11 @@ class IntakeInput(BaseModel):
 
     message: str = Field(..., min_length=1, max_length=1000, description="Mensagem do paciente")
 
-    user_id: Optional[str] = Field(default=None, description="ID do usuário (opcional)")
+    user_id: str | None = Field(default=None, description="ID do usuário (opcional)")
 
-    session_id: Optional[str] = Field(default=None, description="ID da sessão (opcional)")
+    session_id: str | None = Field(default=None, description="ID da sessão (opcional)")
 
-    metadata: Dict[str, Any] = Field(
+    metadata: dict[str, Any] = Field(
         default_factory=dict, description="Metadata adicional (phone, source, etc)"
     )
 

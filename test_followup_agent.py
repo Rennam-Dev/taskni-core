@@ -9,8 +9,8 @@ Testa:
 4. Integração com MultiProviderLLM
 """
 
-import sys
 import asyncio
+import sys
 
 sys.path.insert(0, "/home/user/taskni-core/src")
 
@@ -101,7 +101,7 @@ async def test_intent_detection():
 
         print(f"\n   {status} Intenção detectada: {result['intent']}")
         print(f"      Esperado: {scenario['expected_intent']}")
-        print(f"\n   📨 Mensagem gerada:")
+        print("\n   📨 Mensagem gerada:")
         print(f"      {result['message']}")
 
         results.append(
@@ -114,7 +114,7 @@ async def test_intent_detection():
 
     # Resumo
     print(f"\n{'=' * 80}")
-    print(f"📊 RESUMO - DETECÇÃO DE INTENÇÕES")
+    print("📊 RESUMO - DETECÇÃO DE INTENÇÕES")
     print(f"{'=' * 80}")
 
     correct_intents = sum(1 for r in results if r["intent_correct"])
@@ -135,7 +135,7 @@ async def test_message_quality():
     agent = create_followup_agent(enable_streaming=False)
 
     # Testa mensagem específica
-    print(f"\n📝 Gerando mensagem de reativação...")
+    print("\n📝 Gerando mensagem de reativação...")
 
     result = await agent.run(
         patient_name="Roberto Alves",
@@ -149,12 +149,12 @@ async def test_message_quality():
         },
     )
 
-    print(f"\n✅ Resultado:")
+    print("\n✅ Resultado:")
     print(f"{'─' * 80}")
     print(f"Intenção: {result['intent']}")
     print(f"Pronto para envio: {result['ready_for_delivery']}")
     print(f"Enviar em: {result['send_at']}")
-    print(f"\nMensagem:")
+    print("\nMensagem:")
     print(f"{result['message']}")
     print(f"{'─' * 80}")
 
@@ -171,7 +171,7 @@ async def test_message_quality():
         "Pronta para envio": result["ready_for_delivery"],
     }
 
-    print(f"\n📊 Validações de Qualidade:")
+    print("\n📊 Validações de Qualidade:")
     for check, passed in validations.items():
         status = "✅" if passed else "❌"
         print(f"   {status} {check}")
@@ -188,7 +188,7 @@ async def test_workflow_complete():
 
     agent = create_followup_agent(enable_streaming=False)
 
-    print(f"\n🤖 Executando workflow completo...")
+    print("\n🤖 Executando workflow completo...")
     print(f"   Agente: {agent.name}")
     print(f"   ID: {agent.id}")
 
@@ -232,7 +232,7 @@ async def test_workflow_complete():
         )
 
     print(f"\n{'=' * 80}")
-    print(f"📊 RESUMO - WORKFLOW")
+    print("📊 RESUMO - WORKFLOW")
     print(f"{'=' * 80}")
 
     all_complete = all(
@@ -240,9 +240,9 @@ async def test_workflow_complete():
     )
 
     if all_complete:
-        print(f"\n✅ Todos os workflows completaram com sucesso!")
+        print("\n✅ Todos os workflows completaram com sucesso!")
     else:
-        print(f"\n⚠️  Alguns workflows falharam")
+        print("\n⚠️  Alguns workflows falharam")
 
     for r in workflow_results:
         status = "✅" if all([r["has_intent"], r["has_message"], r["is_ready"]]) else "❌"
@@ -278,14 +278,14 @@ async def main():
         print(f"{'✅' if workflow_passed else '❌'} Workflow Completo")
 
         if intent_correct == total_intents and quality_passed and workflow_passed:
-            print(f"\n🎉 TODOS OS TESTES PASSARAM!")
-            print(f"\n✅ FollowupAgent funcionando perfeitamente:")
-            print(f"   - 6 tipos de intenções detectadas corretamente")
-            print(f"   - Mensagens curtas e naturais")
-            print(f"   - Workflow LangGraph completo (3 nodes)")
-            print(f"   - Integrado com MultiProviderLLM")
+            print("\n🎉 TODOS OS TESTES PASSARAM!")
+            print("\n✅ FollowupAgent funcionando perfeitamente:")
+            print("   - 6 tipos de intenções detectadas corretamente")
+            print("   - Mensagens curtas e naturais")
+            print("   - Workflow LangGraph completo (3 nodes)")
+            print("   - Integrado com MultiProviderLLM")
         else:
-            print(f"\n⚠️  Alguns testes falharam")
+            print("\n⚠️  Alguns testes falharam")
 
         print("=" * 80)
 

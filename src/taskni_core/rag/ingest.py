@@ -10,18 +10,18 @@ Suporta:
 """
 
 import os
-from pathlib import Path
-from typing import List, Optional, Dict, Any
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.embeddings import FakeEmbeddings, OllamaEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_core.documents import Document
 
 # Embeddings
 from langchain_openai import OpenAIEmbeddings
-from langchain_community.embeddings import FakeEmbeddings, OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from core.settings import settings
 from taskni_core.core.settings import taskni_settings
@@ -123,7 +123,7 @@ class DocumentIngestion:
         try:
             # Tenta acessar endpoint da OpenAI com timeout curto
             with httpx.Client(timeout=2.0) as client:
-                response = client.get("https://api.openai.com/v1/models")
+                _ = client.get("https://api.openai.com/v1/models")
                 # Se chegou aqui, não está bloqueado
                 return False
         except Exception:
@@ -195,7 +195,7 @@ class DocumentIngestion:
             persist_directory=self.persist_directory,
         )
 
-    def load_pdf(self, file_path: str) -> List[Document]:
+    def load_pdf(self, file_path: str) -> list[Document]:
         """
         Carrega e processa um arquivo PDF.
 
@@ -219,7 +219,7 @@ class DocumentIngestion:
 
         return chunks
 
-    def load_text(self, file_path: str) -> List[Document]:
+    def load_text(self, file_path: str) -> list[Document]:
         """
         Carrega e processa um arquivo de texto.
 
@@ -234,7 +234,7 @@ class DocumentIngestion:
         loader = TextLoader(file_path, encoding="utf-8")
         documents = loader.load()
 
-        print(f"   ✅ Documento carregado")
+        print("   ✅ Documento carregado")
 
         # Chunking
         chunks = self.text_splitter.split_documents(documents)
@@ -243,7 +243,7 @@ class DocumentIngestion:
 
         return chunks
 
-    def ingest_file(self, file_path: str, metadata: Optional[Dict[str, Any]] = None) -> int:
+    def ingest_file(self, file_path: str, metadata: dict[str, Any] | None = None) -> int:
         """
         Ingere um arquivo (PDF ou texto) no vector store.
 
@@ -282,7 +282,7 @@ class DocumentIngestion:
 
         return len(chunks)
 
-    def ingest_text_direct(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> int:
+    def ingest_text_direct(self, text: str, metadata: dict[str, Any] | None = None) -> int:
         """
         Ingere texto diretamente (sem arquivo).
 
@@ -315,8 +315,8 @@ class DocumentIngestion:
         return len(chunks)
 
     def search(
-        self, query: str, k: int = 4, filter: Optional[Dict[str, Any]] = None
-    ) -> List[Document]:
+        self, query: str, k: int = 4, filter: dict[str, Any] | None = None
+    ) -> list[Document]:
         """
         Busca documentos similares com sanitização de filtros.
 
@@ -348,13 +348,13 @@ class DocumentIngestion:
         """
         return self.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
 
-    def list_collections(self) -> List[str]:
+    def list_collections(self) -> list[str]:
         """Lista todas as coleções no ChromaDB."""
         # ChromaDB pode ter múltiplas coleções
         # Retorna a coleção atual por enquanto
         return [self.collection_name]
 
-    def get_collection_stats(self) -> Dict[str, Any]:
+    def get_collection_stats(self) -> dict[str, Any]:
         """Retorna estatísticas da coleção."""
         collection = self.vectorstore._collection
 
@@ -368,11 +368,11 @@ class DocumentIngestion:
         """Deleta a coleção atual (cuidado!)."""
         print(f"🗑️  Deletando coleção: {self.collection_name}")
         self.vectorstore.delete_collection()
-        print(f"✅ Coleção deletada")
+        print("✅ Coleção deletada")
 
 
 # Instância global para uso no app
-_ingestion_pipeline: Optional[DocumentIngestion] = None
+_ingestion_pipeline: DocumentIngestion | None = None
 
 
 def get_ingestion_pipeline() -> DocumentIngestion:

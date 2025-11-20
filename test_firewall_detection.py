@@ -32,18 +32,18 @@ def test_firewall_detection():
     # Testa detecção
     is_blocked = pipeline._is_firewalled()
 
-    print(f"\n🔍 Resultado da detecção:")
+    print("\n🔍 Resultado da detecção:")
     print(f"   Firewall/proxy detectado: {is_blocked}")
 
     if is_blocked:
-        print(f"\n⚠️  Ambiente bloqueado detectado:")
-        print(f"   - Usando FakeEmbeddings")
-        print(f"   - Busca semântica não funcionará corretamente")
-        print(f"   - Mas sistema continua operacional")
+        print("\n⚠️  Ambiente bloqueado detectado:")
+        print("   - Usando FakeEmbeddings")
+        print("   - Busca semântica não funcionará corretamente")
+        print("   - Mas sistema continua operacional")
     else:
-        print(f"\n✅ Ambiente liberado:")
-        print(f"   - Pode usar OpenAI Embeddings")
-        print(f"   - Busca semântica funcionará corretamente")
+        print("\n✅ Ambiente liberado:")
+        print("   - Pode usar OpenAI Embeddings")
+        print("   - Busca semântica funcionará corretamente")
 
     return True
 
@@ -58,7 +58,7 @@ def test_embeddings_selection():
         persist_directory="./data/chroma_test_firewall", collection_name="test_firewall"
     )
 
-    print(f"\n📊 Embeddings selecionados:")
+    print("\n📊 Embeddings selecionados:")
     print(f"   Tipo: {type(pipeline.embeddings).__name__}")
 
     # Verifica se é FakeEmbeddings ou OpenAIEmbeddings
@@ -66,11 +66,11 @@ def test_embeddings_selection():
     is_openai = "OpenAI" in type(pipeline.embeddings).__name__
 
     if is_fake:
-        print(f"   ⚠️  FakeEmbeddings (desenvolvimento)")
-        print(f"   Razão: Firewall ou sem API key")
+        print("   ⚠️  FakeEmbeddings (desenvolvimento)")
+        print("   Razão: Firewall ou sem API key")
     elif is_openai:
-        print(f"   ✅ OpenAIEmbeddings (produção)")
-        print(f"   Modelo: text-embedding-3-small")
+        print("   ✅ OpenAIEmbeddings (produção)")
+        print("   Modelo: text-embedding-3-small")
 
     return True
 
@@ -91,10 +91,10 @@ def test_fallback_behavior():
     print(f"     Embeddings: {type(pipeline1.embeddings).__name__}")
 
     # Cenário 2: Sistema continua funcionando
-    print(f"\n  2. Sistema operacional:")
+    print("\n  2. Sistema operacional:")
     try:
         stats = pipeline1.get_collection_stats()
-        print(f"     ✅ Pipeline funcional")
+        print("     ✅ Pipeline funcional")
         print(f"     Coleção: {stats['name']}")
         print(f"     Documentos: {stats['count']}")
     except Exception as e:
@@ -113,14 +113,14 @@ def test_httpx_availability():
     try:
         import httpx
 
-        print(f"\n✅ httpx disponível")
+        print("\n✅ httpx disponível")
         print(f"   Versão: {httpx.__version__}")
-        print(f"   Detecção de firewall: ATIVA")
+        print("   Detecção de firewall: ATIVA")
         return True
     except ImportError:
-        print(f"\n⚠️  httpx não disponível")
-        print(f"   Instalar com: pip install httpx")
-        print(f"   Detecção de firewall: DESATIVADA (assume bloqueado)")
+        print("\n⚠️  httpx não disponível")
+        print("   Instalar com: pip install httpx")
+        print("   Detecção de firewall: DESATIVADA (assume bloqueado)")
         return True  # Não é erro crítico
 
 
@@ -150,14 +150,14 @@ def main():
         print(f"  {status} {name}")
 
     if passed == total:
-        print(f"\n🎉 TODOS OS TESTES DE DETECÇÃO PASSARAM!")
-        print(f"\n✅ Sistema de detecção de firewall funcionando:")
-        print(f"   - Detecção automática de ambiente")
-        print(f"   - Fallback inteligente para FakeEmbeddings")
-        print(f"   - Sistema continua operacional mesmo bloqueado")
-        print(f"   - OpenAI usado quando disponível")
+        print("\n🎉 TODOS OS TESTES DE DETECÇÃO PASSARAM!")
+        print("\n✅ Sistema de detecção de firewall funcionando:")
+        print("   - Detecção automática de ambiente")
+        print("   - Fallback inteligente para FakeEmbeddings")
+        print("   - Sistema continua operacional mesmo bloqueado")
+        print("   - OpenAI usado quando disponível")
     else:
-        print(f"\n⚠️  Alguns testes falharam")
+        print("\n⚠️  Alguns testes falharam")
 
     print("=" * 80)
 

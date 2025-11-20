@@ -8,7 +8,7 @@ Este é um agente SIMPLES (não usa LangGraph), apenas LLM direto.
 Ideal para começar rápido sem complexidade.
 """
 
-from typing import Any, Dict
+from typing import Any
 
 from taskni_core.agents.base import BaseAgent
 from taskni_core.core.settings import taskni_settings
@@ -42,7 +42,7 @@ class IntakeAgent(BaseAgent):
             self._llm = MultiProviderLLM(enable_streaming=True)
         return self._llm
 
-    async def run(self, message: str, context: Dict[str, Any]) -> str:
+    async def run(self, message: str, context: dict[str, Any]) -> str:
         """
         Executa a triagem do paciente.
 
@@ -53,11 +53,6 @@ class IntakeAgent(BaseAgent):
         Returns:
             Resposta do agente
         """
-        # Extrai informações do contexto
-        user_id = context.get("user_id")
-        session_id = context.get("session_id")
-        metadata = context.get("metadata", {})
-
         # Constrói o prompt de triagem
         system_prompt = self._build_system_prompt()
         user_prompt = self._build_user_prompt(message, context)
@@ -105,7 +100,7 @@ Estilo de comunicação:
 IMPORTANTE: Não invente informações. Se não souber algo, diga que vai verificar.
 """
 
-    def _build_user_prompt(self, message: str, context: Dict[str, Any]) -> str:
+    def _build_user_prompt(self, message: str, context: dict[str, Any]) -> str:
         """Constrói o prompt do usuário com contexto."""
         prompt_parts = []
 

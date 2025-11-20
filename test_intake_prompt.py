@@ -18,7 +18,7 @@ print("=" * 70)
 
 agent = IntakeAgent()
 
-print(f"\n📋 Configurações do Agente:")
+print("\n📋 Configurações do Agente:")
 print(f"   ID: {agent.id}")
 print(f"   Nome: {agent.name}")
 print(f"   Negócio: {taskni_settings.BUSINESS_NAME}")

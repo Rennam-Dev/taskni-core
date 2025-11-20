@@ -6,9 +6,8 @@ Define modelos de dados para gestão de clientes/pacientes.
 
 from datetime import datetime
 from enum import Enum
-from typing import Optional
 
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
 
 class PatientStatus(str, Enum):
@@ -54,25 +53,25 @@ class Patient(BaseModel):
     Modelo de paciente/cliente.
     """
 
-    id: Optional[str] = Field(None, description="ID único do paciente")
+    id: str | None = Field(None, description="ID único do paciente")
     name: str = Field(..., description="Nome completo")
     phone: str = Field(..., description="Telefone (WhatsApp)")
-    email: Optional[EmailStr] = Field(None, description="Email")
-    cpf: Optional[str] = Field(None, description="CPF")
-    birth_date: Optional[datetime] = Field(None, description="Data de nascimento")
+    email: EmailStr | None = Field(None, description="Email")
+    cpf: str | None = Field(None, description="CPF")
+    birth_date: datetime | None = Field(None, description="Data de nascimento")
 
     # Endereço
-    address: Optional[str] = Field(None, description="Endereço completo")
-    city: Optional[str] = Field(None, description="Cidade")
-    state: Optional[str] = Field(None, description="Estado")
-    zip_code: Optional[str] = Field(None, description="CEP")
+    address: str | None = Field(None, description="Endereço completo")
+    city: str | None = Field(None, description="Cidade")
+    state: str | None = Field(None, description="Estado")
+    zip_code: str | None = Field(None, description="CEP")
 
     # Status e metadados
     status: PatientStatus = Field(
         default=PatientStatus.ACTIVE,
         description="Status do paciente",
     )
-    notes: Optional[str] = Field(None, description="Observações internas")
+    notes: str | None = Field(None, description="Observações internas")
     created_at: datetime = Field(
         default_factory=datetime.now,
         description="Data de cadastro",
@@ -83,8 +82,8 @@ class Patient(BaseModel):
     )
 
     # Integrações
-    chatwoot_contact_id: Optional[int] = Field(None, description="ID no Chatwoot")
-    evolution_remote_jid: Optional[str] = Field(None, description="JID do WhatsApp (Evolution API)")
+    chatwoot_contact_id: int | None = Field(None, description="ID no Chatwoot")
+    evolution_remote_jid: str | None = Field(None, description="JID do WhatsApp (Evolution API)")
 
     model_config = {
         "json_schema_extra": {
@@ -105,23 +104,23 @@ class Appointment(BaseModel):
     Modelo de agendamento.
     """
 
-    id: Optional[str] = Field(None, description="ID único do agendamento")
+    id: str | None = Field(None, description="ID único do agendamento")
     patient_id: str = Field(..., description="ID do paciente")
     scheduled_at: datetime = Field(..., description="Data/hora agendada")
     duration_minutes: int = Field(30, description="Duração em minutos")
 
     # Detalhes
-    service_type: Optional[str] = Field(None, description="Tipo de serviço/consulta")
-    doctor_name: Optional[str] = Field(None, description="Nome do profissional")
-    notes: Optional[str] = Field(None, description="Observações")
+    service_type: str | None = Field(None, description="Tipo de serviço/consulta")
+    doctor_name: str | None = Field(None, description="Nome do profissional")
+    notes: str | None = Field(None, description="Observações")
 
     # Status e controle
     status: AppointmentStatus = Field(
         default=AppointmentStatus.SCHEDULED,
         description="Status do agendamento",
     )
-    confirmed_at: Optional[datetime] = Field(None, description="Quando foi confirmado")
-    completed_at: Optional[datetime] = Field(None, description="Quando foi concluído")
+    confirmed_at: datetime | None = Field(None, description="Quando foi confirmado")
+    completed_at: datetime | None = Field(None, description="Quando foi concluído")
 
     created_at: datetime = Field(
         default_factory=datetime.now,
@@ -129,7 +128,7 @@ class Appointment(BaseModel):
     )
 
     # Integrações
-    calendar_event_id: Optional[str] = Field(None, description="ID no Cal.com ou Google Calendar")
+    calendar_event_id: str | None = Field(None, description="ID no Cal.com ou Google Calendar")
 
     model_config = {
         "json_schema_extra": {
@@ -150,10 +149,10 @@ class Ticket(BaseModel):
     Modelo de ticket de atendimento.
     """
 
-    id: Optional[str] = Field(None, description="ID único do ticket")
+    id: str | None = Field(None, description="ID único do ticket")
     patient_id: str = Field(..., description="ID do paciente")
     subject: str = Field(..., description="Assunto do ticket")
-    description: Optional[str] = Field(None, description="Descrição detalhada")
+    description: str | None = Field(None, description="Descrição detalhada")
 
     # Classificação
     status: TicketStatus = Field(
@@ -164,10 +163,10 @@ class Ticket(BaseModel):
         default=TicketPriority.MEDIUM,
         description="Prioridade",
     )
-    category: Optional[str] = Field(None, description="Categoria (dúvida, reclamação, etc)")
+    category: str | None = Field(None, description="Categoria (dúvida, reclamação, etc)")
 
     # Controle
-    assigned_to: Optional[str] = Field(None, description="Atribuído a (usuário/agente)")
+    assigned_to: str | None = Field(None, description="Atribuído a (usuário/agente)")
     created_at: datetime = Field(
         default_factory=datetime.now,
         description="Data de abertura",
@@ -176,10 +175,10 @@ class Ticket(BaseModel):
         default_factory=datetime.now,
         description="Última atualização",
     )
-    resolved_at: Optional[datetime] = Field(None, description="Data de resolução")
+    resolved_at: datetime | None = Field(None, description="Data de resolução")
 
     # Integrações
-    chatwoot_conversation_id: Optional[int] = Field(None, description="ID da conversa no Chatwoot")
+    chatwoot_conversation_id: int | None = Field(None, description="ID da conversa no Chatwoot")
 
     model_config = {
         "json_schema_extra": {
