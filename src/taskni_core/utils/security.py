@@ -9,6 +9,7 @@ Inclui sanitização de inputs para prevenir:
 """
 
 import re
+from typing import Any
 
 
 def sanitize_prompt_input(text: str, max_length: int = 200, allow_multiline: bool = False) -> str:
@@ -158,7 +159,7 @@ def validate_json_no_injection(obj: dict) -> bool:
     return check_value(obj)
 
 
-def sanitize_rag_filter(filter_dict: dict) -> dict:
+def sanitize_rag_filter(filter_dict: dict) -> dict[str, Any]:
     """
     Sanitiza filtros para queries RAG/ChromaDB.
 
@@ -177,7 +178,7 @@ def sanitize_rag_filter(filter_dict: dict) -> dict:
     if not filter_dict:
         return {}
 
-    sanitized = {}
+    sanitized: dict[str, Any] = {}
 
     for key, value in filter_dict.items():
         # Sanitiza chave (permite apenas alphanumeric + underscore)

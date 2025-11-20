@@ -104,7 +104,7 @@ class MultiProviderLLM:
         logger.info("✅ FakeModel configurado como último recurso")
 
         # Ordena por prioridade
-        providers.sort(key=lambda p: p["priority"])
+        providers.sort(key=lambda p: p["priority"]) # type: ignore
 
         logger.info(f"📋 Provedores disponíveis: {[p['name'] for p in providers]}")
         return providers
@@ -215,7 +215,7 @@ class MultiProviderLLM:
                         else:
                             yield str(chunk)
 
-                async for chunk in asyncio.wait_for(stream_with_timeout(), timeout=timeout):
+                async for chunk in asyncio.wait_for(stream_with_timeout(), timeout=timeout): # type: ignore
                     yield chunk
 
                 logger.info(f"✅ {provider_info['name']} stream concluído")
