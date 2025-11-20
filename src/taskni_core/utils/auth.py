@@ -18,7 +18,7 @@ security_scheme = HTTPBearer(
     scheme_name="Bearer Token",
     description="Token de autenticação (formato: Bearer <token>)",
     bearerFormat="Bearer",
-    auto_error=False  # Não falha automaticamente, vamos tratar manualmente
+    auto_error=False,  # Não falha automaticamente, vamos tratar manualmente
 )
 
 
@@ -56,7 +56,9 @@ class AuthManager:
         if self.enabled:
             logger.info(f"✅ Autenticação habilitada ({len(self.valid_tokens)} token(s))")
         else:
-            logger.warning("⚠️  Autenticação DESABILITADA! Configure API_TOKEN no .env para produção.")
+            logger.warning(
+                "⚠️  Autenticação DESABILITADA! Configure API_TOKEN no .env para produção."
+            )
 
     def verify_token(self, token: str) -> bool:
         """
@@ -81,8 +83,7 @@ class AuthManager:
         return False
 
     def require_auth(
-        self,
-        credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
+        self, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
     ) -> None:
         """
         Dependency do FastAPI que requer autenticação.
@@ -124,8 +125,7 @@ class AuthManager:
         logger.debug(f"✅ Acesso autorizado com token: {token[:10]}...")
 
     async def require_auth_async(
-        self,
-        credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
+        self, credentials: Optional[HTTPAuthorizationCredentials] = Security(security_scheme)
     ) -> None:
         """Versão async do require_auth (mesma lógica)."""
         self.require_auth(credentials)
@@ -134,6 +134,7 @@ class AuthManager:
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
 
 def generate_secure_token(length: int = 32) -> str:
     """

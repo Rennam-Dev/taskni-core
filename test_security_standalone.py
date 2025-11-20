@@ -4,13 +4,15 @@ Valida as implementações standalone.
 """
 
 import sys
-sys.path.insert(0, 'src')
+
+sys.path.insert(0, "src")
+
 
 def test_auth_manager():
     """Testa AuthManager."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: AuthManager (Autenticação)")
-    print("="*80)
+    print("=" * 80)
 
     from taskni_core.utils.auth import AuthManager
 
@@ -53,9 +55,9 @@ def test_auth_manager():
 
 def test_error_handler():
     """Testa ErrorHandler."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: ErrorHandler (Segurança de Erros)")
-    print("="*80)
+    print("=" * 80)
 
     from taskni_core.utils.error_handler import SafeErrorResponse, safe_str_exception
 
@@ -82,24 +84,20 @@ def test_error_handler():
 
 def test_metadata_schemas():
     """Testa schemas de metadata."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: Metadata Schemas (Validação Tipada)")
-    print("="*80)
+    print("=" * 80)
 
     from taskni_core.schema.metadata_schemas import (
         RequestMetadata,
         ResponseMetadata,
-        DocumentMetadata
+        DocumentMetadata,
     )
     from pydantic import ValidationError
 
     # Teste 1: RequestMetadata válida
     print("\n✅ Teste 1: RequestMetadata válida")
-    meta = RequestMetadata(
-        source="whatsapp",
-        phone="+5511999999999",
-        email="teste@example.com"
-    )
+    meta = RequestMetadata(source="whatsapp", phone="+5511999999999", email="teste@example.com")
     assert meta.source == "whatsapp"
     assert meta.phone == "+5511999999999"
     print("   ✓ RequestMetadata válida aceita")
@@ -120,7 +118,7 @@ def test_metadata_schemas():
         tokens=150,
         input_tokens=100,
         output_tokens=50,
-        processing_time_ms=320
+        processing_time_ms=320,
     )
     assert meta.tokens == 150
     assert meta.model_used == "gpt-4o-mini"
@@ -129,9 +127,7 @@ def test_metadata_schemas():
     # Teste 4: DocumentMetadata com tags
     print("\n✅ Teste 4: DocumentMetadata com tags")
     meta = DocumentMetadata(
-        category="faq",
-        tags=["atendimento", "horario", "consulta"],
-        visibility="internal"
+        category="faq", tags=["atendimento", "horario", "consulta"], visibility="internal"
     )
     assert len(meta.tags) == 3
     assert meta.category == "faq"
@@ -152,9 +148,9 @@ def test_metadata_schemas():
 
 def test_cors_config():
     """Testa configuração de CORS no settings."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: CORS Configuration")
-    print("="*80)
+    print("=" * 80)
 
     import os
 
@@ -193,9 +189,9 @@ def test_cors_config():
 
 def test_rate_limit_config():
     """Testa se slowapi está instalado."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: Rate Limiting (Slowapi)")
-    print("="*80)
+    print("=" * 80)
 
     try:
         from slowapi import Limiter
@@ -227,6 +223,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ FALHOU: {e}")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
@@ -235,6 +232,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ FALHOU: {e}")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
@@ -243,6 +241,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ FALHOU: {e}")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
@@ -251,6 +250,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ FALHOU: {e}")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
@@ -259,13 +259,14 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ FALHOU: {e}")
         import traceback
+
         traceback.print_exc()
         all_passed = False
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     if all_passed:
         print("✅ ✅ ✅  TODOS OS TESTES STANDALONE PASSARAM!  ✅ ✅ ✅")
-        print("="*80)
+        print("=" * 80)
         print("\n🎉 Todas as implementações de segurança estão funcionando!")
         print("\n📋 RESUMO:")
         print("   ✅ Sanitização de inputs: FUNCIONAL")
@@ -279,5 +280,5 @@ if __name__ == "__main__":
         sys.exit(0)
     else:
         print("❌ ALGUNS TESTES FALHARAM")
-        print("="*80)
+        print("=" * 80)
         sys.exit(1)

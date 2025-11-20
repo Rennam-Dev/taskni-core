@@ -8,9 +8,11 @@ Valida que:
 3. FIFO funciona (descarte do mais antigo)
 4. Normalização de perguntas funciona
 """
+
 import sys
 import asyncio
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.agents.advanced.rag_agent import create_faq_rag_agent
 
@@ -44,9 +46,9 @@ async def test_cache_miss_and_hit():
     print(f"  - Resposta: {result2['answer'][:50]}...")
 
     # Validação
-    is_first_miss = not result1.get('cached', True)
-    is_second_hit = result2.get('cached', False)
-    same_answer = result1['answer'] == result2['answer']
+    is_first_miss = not result1.get("cached", True)
+    is_second_hit = result2.get("cached", False)
+    same_answer = result1["answer"] == result2["answer"]
 
     print(f"\n{'✅' if is_first_miss else '❌'} Primeira foi cache miss")
     print(f"{'✅' if is_second_hit else '❌'} Segunda foi cache hit")
@@ -80,9 +82,9 @@ async def test_cache_normalization():
         print(f"     Cached: {result.get('cached', False)}")
 
     # Validação: primeira deve ser miss, demais hit
-    first_miss = not results[0].get('cached', True)
-    others_hit = all(r.get('cached', False) for r in results[1:])
-    all_same = len(set(r['answer'] for r in results)) == 1
+    first_miss = not results[0].get("cached", True)
+    others_hit = all(r.get("cached", False) for r in results[1:])
+    all_same = len(set(r["answer"] for r in results)) == 1
 
     print(f"\n{'✅' if first_miss else '❌'} Primeira foi cache miss")
     print(f"{'✅' if others_hit else '❌'} Demais foram cache hit")
@@ -120,12 +122,12 @@ async def test_cache_fifo():
     # Testa se primeira foi expulsa
     print(f"\n📝 Testando se 'Pergunta 1?' foi expulsa:")
     result1 = await agent.run("Pergunta 1?")
-    is_miss = not result1.get('cached', True)
+    is_miss = not result1.get("cached", True)
 
     # Testa se segunda ainda está
     print(f"📝 Testando se 'Pergunta 2?' ainda está:")
     result2 = await agent.run("Pergunta 2?")
-    is_hit = result2.get('cached', False)
+    is_hit = result2.get("cached", False)
 
     print(f"\n{'✅' if is_miss else '❌'} 'Pergunta 1?' foi expulsa (cache miss)")
     print(f"{'✅' if is_hit else '❌'} 'Pergunta 2?' ainda está (cache hit)")
@@ -164,7 +166,7 @@ async def test_cache_stats():
     print(f"\n📊 Após clear_cache():")
     print(f"  - Size: {stats['size']}")
 
-    is_valid = stats['size'] == 0 and stats['capacity'] == 50
+    is_valid = stats["size"] == 0 and stats["capacity"] == 50
 
     print(f"\n{'✅' if is_valid else '❌'} Cache limpo corretamente")
 
@@ -215,4 +217,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

@@ -93,6 +93,7 @@ def create_app() -> FastAPI:
     # IMPORTANTE: allow_origins=["*"] com allow_credentials=True é MUITO PERIGOSO!
     # Sempre use uma whitelist específica de origens permitidas.
     import os
+
     cors_origins_env = os.getenv("CORS_ORIGINS", "")
 
     if cors_origins_env:
@@ -109,8 +110,7 @@ def create_app() -> FastAPI:
             "http://127.0.0.1:8501",
         ]
         logger.warning(
-            "⚠️  CORS usando origens localhost padrão. "
-            "Configure CORS_ORIGINS no .env para produção!"
+            "⚠️  CORS usando origens localhost padrão. Configure CORS_ORIGINS no .env para produção!"
         )
 
     app.add_middleware(
@@ -136,6 +136,7 @@ def create_app() -> FastAPI:
 
     # /agents e /rag são protegidos (requerem Bearer token se configurado)
     from fastapi import Depends
+
     auth_dependency = [Depends(auth_manager.require_auth)]
 
     app.include_router(

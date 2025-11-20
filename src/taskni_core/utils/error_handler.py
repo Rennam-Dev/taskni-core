@@ -58,14 +58,13 @@ class SafeErrorResponse:
         if internal_details:
             logger.error(
                 f"Error {status_code}: {internal_details}",
-                extra={"status_code": status_code, "error_code": error_code}
+                extra={"status_code": status_code, "error_code": error_code},
             )
 
         # Mensagem pública (genérica se não fornecida)
         if not public_message:
             public_message = SafeErrorResponse.GENERIC_MESSAGES.get(
-                status_code,
-                "Erro ao processar requisição."
+                status_code, "Erro ao processar requisição."
             )
 
         # Resposta para o cliente (SEM detalhes internos)
@@ -82,10 +81,7 @@ class SafeErrorResponse:
         return response
 
 
-async def http_exception_handler(
-    request: Request,
-    exc: StarletteHTTPException
-) -> JSONResponse:
+async def http_exception_handler(request: Request, exc: StarletteHTTPException) -> JSONResponse:
     """
     Handler para HTTPException do Starlette/FastAPI.
 
@@ -103,7 +99,7 @@ async def http_exception_handler(
             "path": request.url.path,
             "method": request.method,
             "status_code": exc.status_code,
-        }
+        },
     )
 
     # Para erros 4xx, pode retornar a mensagem original (geralmente segura)
@@ -125,8 +121,7 @@ async def http_exception_handler(
 
 
 async def validation_exception_handler(
-    request: Request,
-    exc: RequestValidationError
+    request: Request, exc: RequestValidationError
 ) -> JSONResponse:
     """
     Handler para erros de validação Pydantic.
@@ -145,7 +140,7 @@ async def validation_exception_handler(
             "path": request.url.path,
             "method": request.method,
             "errors": exc.errors(),
-        }
+        },
     )
 
     # Erros de validação são seguros de expor (não contêm lógica interna)
@@ -162,10 +157,7 @@ async def validation_exception_handler(
     )
 
 
-async def generic_exception_handler(
-    request: Request,
-    exc: Exception
-) -> JSONResponse:
+async def generic_exception_handler(request: Request, exc: Exception) -> JSONResponse:
     """
     Handler genérico para exceções não tratadas.
 
@@ -190,7 +182,7 @@ async def generic_exception_handler(
             "method": request.method,
             "exception_type": exc.__class__.__name__,
             "exception_message": str(exc),
-        }
+        },
     )
     logger.debug(f"Stacktrace:\n{tb}")  # Debug level para stacktrace completo
 
@@ -229,10 +221,10 @@ def safe_str_exception(exc: Exception, max_length: int = 200) -> str:
     exc_str = re.sub(r'File ".*?"', 'File "<internal>"', exc_str)
 
     # Remove paths absolutos Unix/Linux: /home/user/... ou /usr/local/...
-    exc_str = re.sub(r'/[\w\-./]+', '<path>', exc_str)
+    exc_str = re.sub(r"/[\w\-./]+", "<path>", exc_str)
 
     # Remove paths absolutos Windows: C:\Users\... ou C:/Users/...
-    exc_str = re.sub(r'[A-Za-z]:[/\\][\w\-./\\]+', '<path>', exc_str)
+    exc_str = re.sub(r"[A-Za-z]:[/\\][\w\-./\\]+", "<path>", exc_str)
 
     # Limita tamanho
     if len(exc_str) > max_length:

@@ -30,6 +30,7 @@ from taskni_core.utils.security import sanitize_rag_filter
 # Para detecção de firewall
 try:
     import httpx
+
     HTTPX_AVAILABLE = True
 except ImportError:
     HTTPX_AVAILABLE = False
@@ -96,8 +97,10 @@ class DocumentIngestion:
 
         try:
             # Tenta acessar o endpoint /api/tags do Ollama
-            base_url = taskni_settings.OLLAMA_BASE_URL.rstrip('/')
-            with httpx.Client(timeout=3.0, verify=False) as client:  # verify=False para HTTPS auto-assinado
+            base_url = taskni_settings.OLLAMA_BASE_URL.rstrip("/")
+            with httpx.Client(
+                timeout=3.0, verify=False
+            ) as client:  # verify=False para HTTPS auto-assinado
                 response = client.get(f"{base_url}/api/tags")
                 return response.status_code == 200
         except Exception as e:
@@ -240,11 +243,7 @@ class DocumentIngestion:
 
         return chunks
 
-    def ingest_file(
-        self,
-        file_path: str,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> int:
+    def ingest_file(self, file_path: str, metadata: Optional[Dict[str, Any]] = None) -> int:
         """
         Ingere um arquivo (PDF ou texto) no vector store.
 
@@ -283,11 +282,7 @@ class DocumentIngestion:
 
         return len(chunks)
 
-    def ingest_text_direct(
-        self,
-        text: str,
-        metadata: Optional[Dict[str, Any]] = None
-    ) -> int:
+    def ingest_text_direct(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> int:
         """
         Ingere texto diretamente (sem arquivo).
 
@@ -301,10 +296,7 @@ class DocumentIngestion:
         print(f"📝 Ingerindo texto direto ({len(text)} caracteres)")
 
         # Cria documento
-        doc = Document(
-            page_content=text,
-            metadata=metadata or {}
-        )
+        doc = Document(page_content=text, metadata=metadata or {})
 
         # Chunking
         chunks = self.text_splitter.split_documents([doc])
@@ -323,10 +315,7 @@ class DocumentIngestion:
         return len(chunks)
 
     def search(
-        self,
-        query: str,
-        k: int = 4,
-        filter: Optional[Dict[str, Any]] = None
+        self, query: str, k: int = 4, filter: Optional[Dict[str, Any]] = None
     ) -> List[Document]:
         """
         Busca documentos similares com sanitização de filtros.
@@ -343,11 +332,7 @@ class DocumentIngestion:
         if filter is not None:
             filter = sanitize_rag_filter(filter)
 
-        results = self.vectorstore.similarity_search(
-            query,
-            k=k,
-            filter=filter
-        )
+        results = self.vectorstore.similarity_search(query, k=k, filter=filter)
 
         return results
 
@@ -361,10 +346,7 @@ class DocumentIngestion:
         Returns:
             Retriever do LangChain
         """
-        return self.vectorstore.as_retriever(
-            search_type="similarity",
-            search_kwargs={"k": k}
-        )
+        return self.vectorstore.as_retriever(search_type="similarity", search_kwargs={"k": k})
 
     def list_collections(self) -> List[str]:
         """Lista todas as coleções no ChromaDB."""

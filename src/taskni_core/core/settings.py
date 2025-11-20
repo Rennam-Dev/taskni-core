@@ -128,5 +128,6 @@ def get_core_settings():
     global _core_settings
     if _core_settings is None:
         from core.settings import settings as core_settings
+
         _core_settings = core_settings
     return _core_settings

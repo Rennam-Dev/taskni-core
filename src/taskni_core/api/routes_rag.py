@@ -38,17 +38,19 @@ limiter = Limiter(key_func=get_remote_address)
 # Schemas
 # ============================================================================
 
+
 class IngestTextRequest(BaseModel):
     """Request para ingestão de texto direto."""
+
     text: str
     metadata: DocumentMetadata = Field(
-        default_factory=DocumentMetadata,
-        description="Metadados validados do documento"
+        default_factory=DocumentMetadata, description="Metadados validados do documento"
     )
 
 
 class IngestTextResponse(BaseModel):
     """Response da ingestão de texto."""
+
     message: str
     chunks_count: int
     metadata: DocumentMetadata
@@ -56,6 +58,7 @@ class IngestTextResponse(BaseModel):
 
 class UploadResponse(BaseModel):
     """Response do upload de documento."""
+
     message: str
     filename: str
     chunks_count: int
@@ -64,6 +67,7 @@ class UploadResponse(BaseModel):
 
 class DocumentsStatsResponse(BaseModel):
     """Response com estatísticas dos documentos."""
+
     collection_name: str
     documents_count: int
     persist_directory: str
@@ -71,6 +75,7 @@ class DocumentsStatsResponse(BaseModel):
 
 class DeleteResponse(BaseModel):
     """Response da deleção."""
+
     message: str
     collection_name: str
 
@@ -78,6 +83,7 @@ class DeleteResponse(BaseModel):
 # ============================================================================
 # Endpoints
 # ============================================================================
+
 
 @router.post("/upload", response_model=UploadResponse)
 @limiter.limit("5/minute")  # 5 uploads por minuto - pode encher disco
@@ -105,7 +111,7 @@ async def upload_document(
     if file_extension not in [".pdf", ".txt", ".md"]:
         raise HTTPException(
             status_code=400,
-            detail=f"Formato não suportado: {file_extension}. Use .pdf, .txt ou .md"
+            detail=f"Formato não suportado: {file_extension}. Use .pdf, .txt ou .md",
         )
 
     # Lê conteúdo do arquivo
@@ -113,11 +119,7 @@ async def upload_document(
     file_size = len(content)
 
     # Salva temporariamente
-    with tempfile.NamedTemporaryFile(
-        delete=False,
-        suffix=file_extension,
-        mode="wb"
-    ) as tmp_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=file_extension, mode="wb") as tmp_file:
         tmp_file.write(content)
         tmp_path = tmp_file.name
 
@@ -127,21 +129,16 @@ async def upload_document(
 
         # Parse metadata se fornecido
         import json
+
         metadata_dict = {}
         if metadata:
             try:
                 metadata_dict = json.loads(metadata)
             except json.JSONDecodeError:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Metadata inválida. Use formato JSON."
-                )
+                raise HTTPException(status_code=400, detail="Metadata inválida. Use formato JSON.")
 
         # Ingere arquivo
-        chunks_count = pipeline.ingest_file(
-            file_path=tmp_path,
-            metadata=metadata_dict
-        )
+        chunks_count = pipeline.ingest_file(file_path=tmp_path, metadata=metadata_dict)
 
         return UploadResponse(
             message=f"Documento '{filename}' ingerido com sucesso",
@@ -171,10 +168,7 @@ async def ingest_text(request: Request, payload: IngestTextRequest):
         Informações sobre a ingestão
     """
     if not payload.text or not payload.text.strip():
-        raise HTTPException(
-            status_code=400,
-            detail="Texto não pode estar vazio"
-        )
+        raise HTTPException(status_code=400, detail="Texto não pode estar vazio")
 
     # Pipeline de ingestão
     pipeline = get_ingestion_pipeline()
@@ -183,10 +177,7 @@ async def ingest_text(request: Request, payload: IngestTextRequest):
     metadata_dict = payload.metadata.model_dump(exclude_none=True)
 
     # Ingere texto
-    chunks_count = pipeline.ingest_text_direct(
-        text=payload.text,
-        metadata=metadata_dict
-    )
+    chunks_count = pipeline.ingest_text_direct(text=payload.text, metadata=metadata_dict)
 
     return IngestTextResponse(
         message="Texto ingerido com sucesso",

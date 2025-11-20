@@ -60,12 +60,15 @@ class MultiProviderLLM:
         if settings.GROQ_API_KEY:
             try:
                 from schema.models import GroqModelName
-                providers.append({
-                    "name": "Groq",
-                    "model": GroqModelName.LLAMA_31_8B,
-                    "priority": 1,
-                    "fast": True,
-                })
+
+                providers.append(
+                    {
+                        "name": "Groq",
+                        "model": GroqModelName.LLAMA_31_8B,
+                        "priority": 1,
+                        "fast": True,
+                    }
+                )
                 logger.info("✅ Groq configurado como provider primário")
             except Exception as e:
                 logger.warning(f"⚠️  Groq não pôde ser inicializado: {e}")
@@ -74,24 +77,30 @@ class MultiProviderLLM:
         if settings.OPENAI_API_KEY:
             try:
                 from schema.models import OpenAIModelName
-                providers.append({
-                    "name": "OpenAI",
-                    "model": OpenAIModelName.GPT_4O_MINI,
-                    "priority": 2,
-                    "fast": True,
-                })
+
+                providers.append(
+                    {
+                        "name": "OpenAI",
+                        "model": OpenAIModelName.GPT_4O_MINI,
+                        "priority": 2,
+                        "fast": True,
+                    }
+                )
                 logger.info("✅ OpenAI configurado como fallback")
             except Exception as e:
                 logger.warning(f"⚠️  OpenAI não pôde ser inicializado: {e}")
 
         # 3. FakeModel (sempre disponível)
         from schema.models import FakeModelName
-        providers.append({
-            "name": "FakeModel",
-            "model": FakeModelName.FAKE,
-            "priority": 999,  # Último recurso
-            "fast": True,
-        })
+
+        providers.append(
+            {
+                "name": "FakeModel",
+                "model": FakeModelName.FAKE,
+                "priority": 999,  # Último recurso
+                "fast": True,
+            }
+        )
         logger.info("✅ FakeModel configurado como último recurso")
 
         # Ordena por prioridade
@@ -113,10 +122,7 @@ class MultiProviderLLM:
         return get_model(provider_info["model"])
 
     async def ainvoke(
-        self,
-        messages: List[BaseMessage] | List[Dict[str, str]],
-        timeout: float = 30.0,
-        **kwargs
+        self, messages: List[BaseMessage] | List[Dict[str, str]], timeout: float = 30.0, **kwargs
     ) -> Any:
         """
         Invoca o LLM com fallback automático e timeout.
@@ -145,10 +151,7 @@ class MultiProviderLLM:
                 llm = self._get_llm(provider_info)
 
                 # Adiciona timeout de 30 segundos para evitar hang
-                response = await asyncio.wait_for(
-                    llm.ainvoke(messages, **kwargs),
-                    timeout=timeout
-                )
+                response = await asyncio.wait_for(llm.ainvoke(messages, **kwargs), timeout=timeout)
 
                 logger.info(f"✅ {provider_info['name']} respondeu com sucesso")
                 return response
@@ -166,15 +169,10 @@ class MultiProviderLLM:
 
         # Se chegou aqui, todos falharam
         error_summary = "\n".join([f"  - {err}" for err in errors])
-        raise Exception(
-            f"Todos os provedores falharam:\n{error_summary}"
-        )
+        raise Exception(f"Todos os provedores falharam:\n{error_summary}")
 
     async def astream(
-        self,
-        messages: List[BaseMessage] | List[Dict[str, str]],
-        timeout: float = 60.0,
-        **kwargs
+        self, messages: List[BaseMessage] | List[Dict[str, str]], timeout: float = 60.0, **kwargs
     ):
         """
         Stream de respostas do LLM com fallback automático e timeout.
@@ -217,10 +215,7 @@ class MultiProviderLLM:
                         else:
                             yield str(chunk)
 
-                async for chunk in asyncio.wait_for(
-                    stream_with_timeout(),
-                    timeout=timeout
-                ):
+                async for chunk in asyncio.wait_for(stream_with_timeout(), timeout=timeout):
                     yield chunk
 
                 logger.info(f"✅ {provider_info['name']} stream concluído")
@@ -239,15 +234,9 @@ class MultiProviderLLM:
 
         # Se chegou aqui, todos falharam
         error_summary = "\n".join([f"  - {err}" for err in errors])
-        raise Exception(
-            f"Todos os provedores falharam no streaming:\n{error_summary}"
-        )
+        raise Exception(f"Todos os provedores falharam no streaming:\n{error_summary}")
 
-    def invoke_sync(
-        self,
-        messages: List[BaseMessage] | List[Dict[str, str]],
-        **kwargs
-    ) -> str:
+    def invoke_sync(self, messages: List[BaseMessage] | List[Dict[str, str]], **kwargs) -> str:
         """
         Versão síncrona do ainvoke.
 

@@ -7,6 +7,7 @@ Testa:
 - Ingestão de PDF usando Ollama embeddings
 - RAG Agent usando Ollama embeddings
 """
+
 import sys
 from pathlib import Path
 
@@ -49,8 +50,7 @@ def test_text_ingestion():
     print("=" * 60)
 
     pipeline = DocumentIngestion(
-        collection_name="test_ollama_text",
-        persist_directory="./data/test_chroma"
+        collection_name="test_ollama_text", persist_directory="./data/test_chroma"
     )
 
     # Texto de teste
@@ -68,8 +68,7 @@ def test_text_ingestion():
 
     try:
         num_chunks = pipeline.ingest_text_direct(
-            text=test_text,
-            metadata={"source": "test", "category": "faq"}
+            text=test_text, metadata={"source": "test", "category": "faq"}
         )
 
         print(f"\n✅ Texto ingerido com sucesso!")
@@ -89,6 +88,7 @@ def test_text_ingestion():
     except Exception as e:
         print(f"\n❌ Erro na ingestão: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -108,14 +108,12 @@ def test_pdf_ingestion():
         return None
 
     pipeline = DocumentIngestion(
-        collection_name="test_ollama_pdf",
-        persist_directory="./data/test_chroma"
+        collection_name="test_ollama_pdf", persist_directory="./data/test_chroma"
     )
 
     try:
         num_chunks = pipeline.ingest_file(
-            file_path=pdf_path,
-            metadata={"source": "test_pdf", "category": "documentation"}
+            file_path=pdf_path, metadata={"source": "test_pdf", "category": "documentation"}
         )
 
         print(f"\n✅ PDF ingerido com sucesso!")
@@ -125,6 +123,7 @@ def test_pdf_ingestion():
     except Exception as e:
         print(f"\n❌ Erro na ingestão de PDF: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -138,8 +137,7 @@ def test_rag_agent():
     try:
         # Primeiro, ingere alguns dados de FAQ
         pipeline = DocumentIngestion(
-            collection_name="clinic_faq",
-            persist_directory="./data/chroma"
+            collection_name="clinic_faq", persist_directory="./data/chroma"
         )
 
         faq_data = """
@@ -161,8 +159,7 @@ def test_rag_agent():
         """
 
         pipeline.ingest_text_direct(
-            text=faq_data,
-            metadata={"source": "faq", "type": "clinic_info"}
+            text=faq_data, metadata={"source": "faq", "type": "clinic_info"}
         )
 
         print("\n✅ FAQ ingerido no ChromaDB")
@@ -183,6 +180,7 @@ def test_rag_agent():
     except Exception as e:
         print(f"\n❌ Erro no RAG Agent: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 
@@ -206,8 +204,8 @@ def test_embeddings_endpoint():
                 f"{base_url}/api/embeddings",
                 json={
                     "model": taskni_settings.OLLAMA_EMBED_MODEL,
-                    "prompt": "Hello, this is a test"
-                }
+                    "prompt": "Hello, this is a test",
+                },
             )
 
             if response.status_code == 200:
@@ -228,6 +226,7 @@ def test_embeddings_endpoint():
     except Exception as e:
         print(f"\n❌ Erro ao chamar endpoint: {e}")
         import traceback
+
         traceback.print_exc()
         return False
 

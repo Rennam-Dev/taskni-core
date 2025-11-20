@@ -16,9 +16,9 @@ def test_agent_invoke_rate_limit():
     """
     Testa rate limit do endpoint /agents/invoke (10/minuto).
     """
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: Rate Limit em /agents/invoke (10/minuto)")
-    print("="*80)
+    print("=" * 80)
 
     url = f"{BASE_URL}/agents/invoke"
 
@@ -31,12 +31,8 @@ def test_agent_invoke_rate_limit():
         try:
             response = requests.post(
                 url,
-                json={
-                    "agent_id": "followup-agent",
-                    "message": "Teste",
-                    "metadata": {}
-                },
-                timeout=5
+                json={"agent_id": "followup-agent", "message": "Teste", "metadata": {}},
+                timeout=5,
             )
 
             if response.status_code == 200:
@@ -67,9 +63,9 @@ def test_rag_upload_rate_limit():
     """
     Testa rate limit do endpoint /rag/upload (5/minuto).
     """
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: Rate Limit em /rag/upload (5/minuto)")
-    print("="*80)
+    print("=" * 80)
 
     url = f"{BASE_URL}/rag/upload"
 
@@ -80,9 +76,7 @@ def test_rag_upload_rate_limit():
     for i in range(1, 8):
         try:
             # Cria arquivo temporário
-            files = {
-                'file': ('test.txt', 'Conteúdo de teste', 'text/plain')
-            }
+            files = {"file": ("test.txt", "Conteúdo de teste", "text/plain")}
 
             response = requests.post(url, files=files, timeout=5)
 
@@ -114,9 +108,9 @@ def test_rag_delete_rate_limit():
     """
     Testa rate limit do endpoint /rag/documents DELETE (1/hora).
     """
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE: Rate Limit em /rag/documents DELETE (1/hora)")
-    print("="*80)
+    print("=" * 80)
 
     url = f"{BASE_URL}/rag/documents"
 
@@ -178,9 +172,9 @@ if __name__ == "__main__":
     # Teste 3: RAG delete (1/hora) - CUIDADO!
     # test_rag_delete_rate_limit()  # Descomentar para testar delete
 
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("✅ TESTES CONCLUÍDOS")
-    print("="*80)
+    print("=" * 80)
     print("\n💡 Dica: Se nenhum request foi bloqueado, verifique se o servidor está")
     print("   rodando com o código atualizado.")
     print()

@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field, field_validator
 # Request Metadata
 # ============================================================================
 
+
 class RequestMetadata(BaseModel):
     """
     Metadata de requisições de agentes (input).
@@ -21,56 +22,40 @@ class RequestMetadata(BaseModel):
     """
 
     # Origem da mensagem
-    source: Optional[Literal["whatsapp", "chatwoot", "web", "api", "telegram", "instagram"]] = Field(
-        None,
-        description="Canal de origem da mensagem"
+    source: Optional[Literal["whatsapp", "chatwoot", "web", "api", "telegram", "instagram"]] = (
+        Field(None, description="Canal de origem da mensagem")
     )
 
     # Contato
     phone: Optional[str] = Field(
-        None,
-        description="Telefone do usuário (formato: +5511999999999)",
-        max_length=20
+        None, description="Telefone do usuário (formato: +5511999999999)", max_length=20
     )
-    email: Optional[str] = Field(
-        None,
-        description="Email do usuário",
-        max_length=255
-    )
+    email: Optional[str] = Field(None, description="Email do usuário", max_length=255)
 
     # IDs externos
     chatwoot_conversation_id: Optional[str] = Field(
-        None,
-        description="ID da conversa no Chatwoot",
-        max_length=100
+        None, description="ID da conversa no Chatwoot", max_length=100
     )
     evolution_instance_id: Optional[str] = Field(
-        None,
-        description="ID da instância Evolution API",
-        max_length=100
+        None, description="ID da instância Evolution API", max_length=100
     )
     external_user_id: Optional[str] = Field(
-        None,
-        description="ID do usuário em sistema externo",
-        max_length=100
+        None, description="ID do usuário em sistema externo", max_length=100
     )
 
     # Contexto adicional
     language: Optional[Literal["pt-BR", "en-US", "es-ES"]] = Field(
-        "pt-BR",
-        description="Idioma da conversa"
+        "pt-BR", description="Idioma da conversa"
     )
     timezone: Optional[str] = Field(
-        "America/Sao_Paulo",
-        description="Timezone do usuário",
-        max_length=50
+        "America/Sao_Paulo", description="Timezone do usuário", max_length=50
     )
 
     # Campos customizados (limitados para segurança)
     custom: Optional[dict[str, str | int | bool]] = Field(
         default_factory=dict,
         description="Campos customizados (apenas tipos básicos)",
-        max_length=10  # Máximo 10 campos customizados
+        max_length=10,  # Máximo 10 campos customizados
     )
 
     @field_validator("phone")
@@ -80,8 +65,8 @@ class RequestMetadata(BaseModel):
         if v is None:
             return v
         # Remove caracteres não-numéricos
-        clean = ''.join(c for c in v if c.isdigit() or c == '+')
-        if clean and not clean.startswith('+'):
+        clean = "".join(c for c in v if c.isdigit() or c == "+")
+        if clean and not clean.startswith("+"):
             raise ValueError("Telefone deve começar com +")
         if len(clean) < 10 or len(clean) > 15:
             raise ValueError("Telefone deve ter entre 10 e 15 dígitos")
@@ -120,6 +105,7 @@ class RequestMetadata(BaseModel):
 # Response Metadata
 # ============================================================================
 
+
 class ResponseMetadata(BaseModel):
     """
     Metadata de respostas de agentes (output).
@@ -129,9 +115,7 @@ class ResponseMetadata(BaseModel):
 
     # Modelo LLM usado
     model_used: Optional[str] = Field(
-        None,
-        description="Modelo LLM usado (ex: gpt-4o-mini, groq-llama3)",
-        max_length=50
+        None, description="Modelo LLM usado (ex: gpt-4o-mini, groq-llama3)", max_length=50
     )
 
     # Métricas de uso
@@ -139,71 +123,41 @@ class ResponseMetadata(BaseModel):
         None,
         description="Total de tokens usados",
         ge=0,  # Maior ou igual a 0
-        le=1000000  # Limite de 1M tokens
+        le=1000000,  # Limite de 1M tokens
     )
-    input_tokens: Optional[int] = Field(
-        None,
-        description="Tokens de input",
-        ge=0
-    )
-    output_tokens: Optional[int] = Field(
-        None,
-        description="Tokens de output",
-        ge=0
-    )
+    input_tokens: Optional[int] = Field(None, description="Tokens de input", ge=0)
+    output_tokens: Optional[int] = Field(None, description="Tokens de output", ge=0)
 
     # Métricas de performance
     processing_time_ms: Optional[int] = Field(
         None,
         description="Tempo de processamento em milissegundos",
         ge=0,
-        le=300000  # Máx 5 minutos
+        le=300000,  # Máx 5 minutos
     )
     llm_latency_ms: Optional[int] = Field(
-        None,
-        description="Latência do LLM em milissegundos",
-        ge=0
+        None, description="Latência do LLM em milissegundos", ge=0
     )
 
     # Informações do agente
-    agent_version: Optional[str] = Field(
-        None,
-        description="Versão do agente",
-        max_length=20
-    )
+    agent_version: Optional[str] = Field(None, description="Versão do agente", max_length=20)
     workflow_steps: Optional[int] = Field(
-        None,
-        description="Número de steps do workflow executados",
-        ge=0,
-        le=100
+        None, description="Número de steps do workflow executados", ge=0, le=100
     )
 
     # RAG metadata (se aplicável)
-    rag_used: Optional[bool] = Field(
-        None,
-        description="Se RAG foi usado na resposta"
-    )
+    rag_used: Optional[bool] = Field(None, description="Se RAG foi usado na resposta")
     documents_retrieved: Optional[int] = Field(
-        None,
-        description="Número de documentos recuperados do RAG",
-        ge=0,
-        le=100
+        None, description="Número de documentos recuperados do RAG", ge=0, le=100
     )
-    cache_hit: Optional[bool] = Field(
-        None,
-        description="Se resposta veio do cache"
-    )
+    cache_hit: Optional[bool] = Field(None, description="Se resposta veio do cache")
 
     # Flags de qualidade
     confidence_score: Optional[float] = Field(
-        None,
-        description="Score de confiança da resposta (0-1)",
-        ge=0.0,
-        le=1.0
+        None, description="Score de confiança da resposta (0-1)", ge=0.0, le=1.0
     )
     needs_human_review: Optional[bool] = Field(
-        None,
-        description="Se resposta precisa de revisão humana"
+        None, description="Se resposta precisa de revisão humana"
     )
 
     @field_validator("tokens", "input_tokens", "output_tokens")
@@ -217,15 +171,14 @@ class ResponseMetadata(BaseModel):
             inp = values.get("input_tokens", 0)
             out = values.get("output_tokens", 0)
             if inp + out != total:
-                raise ValueError(
-                    f"Tokens inconsistentes: {inp} + {out} ≠ {total}"
-                )
+                raise ValueError(f"Tokens inconsistentes: {inp} + {out} ≠ {total}")
         return v
 
 
 # ============================================================================
 # RAG Metadata
 # ============================================================================
+
 
 class DocumentMetadata(BaseModel):
     """
@@ -235,54 +188,31 @@ class DocumentMetadata(BaseModel):
     """
 
     # Informações da fonte
-    source_file: Optional[str] = Field(
-        None,
-        description="Nome do arquivo original",
-        max_length=255
-    )
-    source_url: Optional[str] = Field(
-        None,
-        description="URL original do documento",
-        max_length=500
-    )
+    source_file: Optional[str] = Field(None, description="Nome do arquivo original", max_length=255)
+    source_url: Optional[str] = Field(None, description="URL original do documento", max_length=500)
     source_type: Optional[Literal["manual", "crawl", "api", "upload"]] = Field(
-        "upload",
-        description="Como o documento foi obtido"
+        "upload", description="Como o documento foi obtido"
     )
 
     # Categorização
     category: Optional[Literal["faq", "policy", "procedure", "manual", "other"]] = Field(
-        None,
-        description="Categoria do documento"
+        None, description="Categoria do documento"
     )
     tags: Optional[list[str]] = Field(
         default_factory=list,
         description="Tags do documento",
-        max_length=20  # Máx 20 tags
+        max_length=20,  # Máx 20 tags
     )
 
     # Controle de versão
-    version: Optional[str] = Field(
-        None,
-        description="Versão do documento",
-        max_length=20
-    )
-    author: Optional[str] = Field(
-        None,
-        description="Autor do documento",
-        max_length=100
-    )
+    version: Optional[str] = Field(None, description="Versão do documento", max_length=20)
+    author: Optional[str] = Field(None, description="Autor do documento", max_length=100)
 
     # Controle de acesso
     visibility: Optional[Literal["public", "internal", "restricted"]] = Field(
-        "internal",
-        description="Nível de visibilidade"
+        "internal", description="Nível de visibilidade"
     )
-    department: Optional[str] = Field(
-        None,
-        description="Departamento responsável",
-        max_length=100
-    )
+    department: Optional[str] = Field(None, description="Departamento responsável", max_length=100)
 
     @field_validator("tags")
     @classmethod
@@ -315,6 +245,7 @@ class DocumentMetadata(BaseModel):
 # ============================================================================
 # Helper Functions
 # ============================================================================
+
 
 def validate_metadata(metadata: dict, metadata_type: type[BaseModel]) -> BaseModel:
     """

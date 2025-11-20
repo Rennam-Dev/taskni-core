@@ -9,20 +9,21 @@ Verifica se a sanitização protege contra:
 """
 
 import sys
-sys.path.insert(0, 'src')
+
+sys.path.insert(0, "src")
 
 from taskni_core.utils.security import (
     sanitize_prompt_input,
     sanitize_rag_filter,
-    validate_json_no_injection
+    validate_json_no_injection,
 )
 
 
 def test_sanitize_prompt_input():
     """Testa sanitização de inputs de prompt."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE 1: Sanitização de Inputs de Prompt")
-    print("="*80)
+    print("=" * 80)
 
     # Teste 1: Input normal deve passar intacto
     normal_input = "João Silva"
@@ -96,9 +97,9 @@ def test_sanitize_prompt_input():
 
 def test_sanitize_rag_filter():
     """Testa sanitização de filtros RAG."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE 2: Sanitização de Filtros RAG")
-    print("="*80)
+    print("=" * 80)
 
     # Teste 1: Filtro normal
     normal_filter = {"category": "faq", "status": "active"}
@@ -129,10 +130,7 @@ def test_sanitize_rag_filter():
     # Teste 4: Filtro aninhado
     nested_filter = {
         "category": "faq",
-        "metadata": {
-            "author": "admin'; DROP--",
-            "status": "active"
-        }
+        "metadata": {"author": "admin'; DROP--", "status": "active"},
     }
     result = sanitize_rag_filter(nested_filter)
     print(f"\n✅ Filtro aninhado:")
@@ -147,9 +145,9 @@ def test_sanitize_rag_filter():
 
 def test_validate_json_no_injection():
     """Testa validação de JSON contra injection."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE 3: Validação de JSON")
-    print("="*80)
+    print("=" * 80)
 
     # Teste 1: JSON normal
     normal_json = {"name": "João", "age": 30}
@@ -184,7 +182,9 @@ def test_validate_json_no_injection():
     assert result is False, "JavaScript URI deve ser rejeitado"
 
     # Teste 5: Profundidade excessiva (DoS)
-    deep_json = {"a": {"b": {"c": {"d": {"e": {"f": {"g": {"h": {"i": {"j": {"k": {"l": "too deep"}}}}}}}}}}}}
+    deep_json = {
+        "a": {"b": {"c": {"d": {"e": {"f": {"g": {"h": {"i": {"j": {"k": {"l": "too deep"}}}}}}}}}}}
+    }
     result = validate_json_no_injection(deep_json)
     print(f"\n✅ Profundidade excessiva:")
     print(f"   Input:  (JSON com 12 níveis)")
@@ -196,9 +196,9 @@ def test_validate_json_no_injection():
 
 def test_multiline_allowed():
     """Testa que multiline funciona quando permitido."""
-    print("\n" + "="*80)
+    print("\n" + "=" * 80)
     print("🧪 TESTE 4: Multiline Permitido")
-    print("="*80)
+    print("=" * 80)
 
     # Texto com quebras de linha legítimas
     multiline_input = """Qual o horário de funcionamento?
@@ -233,9 +233,9 @@ if __name__ == "__main__":
         test_validate_json_no_injection()
         test_multiline_allowed()
 
-        print("\n" + "="*80)
+        print("\n" + "=" * 80)
         print("✅ TODOS OS TESTES PASSARAM!")
-        print("="*80)
+        print("=" * 80)
         print("\n🎉 Sanitização de inputs está funcionando corretamente!")
         print("🔒 Sistema protegido contra:")
         print("   - Prompt injection")
@@ -252,5 +252,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n💥 ERRO: {e}")
         import traceback
+
         traceback.print_exc()
         sys.exit(1)

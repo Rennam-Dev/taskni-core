@@ -7,8 +7,10 @@ Valida que:
 2. Fallback para FakeEmbeddings quando bloqueado
 3. OpenAI Embeddings usado quando disponível
 """
+
 import sys
-sys.path.insert(0, '/home/user/taskni-core/src')
+
+sys.path.insert(0, "/home/user/taskni-core/src")
 
 from taskni_core.rag.ingest import DocumentIngestion
 
@@ -24,8 +26,7 @@ def test_firewall_detection():
     print("=" * 80)
 
     pipeline = DocumentIngestion(
-        persist_directory="./data/chroma_test_firewall",
-        collection_name="test_firewall"
+        persist_directory="./data/chroma_test_firewall", collection_name="test_firewall"
     )
 
     # Testa detecção
@@ -54,8 +55,7 @@ def test_embeddings_selection():
     print("=" * 80)
 
     pipeline = DocumentIngestion(
-        persist_directory="./data/chroma_test_firewall",
-        collection_name="test_firewall"
+        persist_directory="./data/chroma_test_firewall", collection_name="test_firewall"
     )
 
     print(f"\n📊 Embeddings selecionados:")
@@ -86,8 +86,7 @@ def test_fallback_behavior():
     # Cenário 1: Com firewall
     print("\n  1. Ambiente com firewall:")
     pipeline1 = DocumentIngestion(
-        persist_directory="./data/chroma_test_firewall",
-        collection_name="test_firewall_1"
+        persist_directory="./data/chroma_test_firewall", collection_name="test_firewall_1"
     )
     print(f"     Embeddings: {type(pipeline1.embeddings).__name__}")
 
@@ -113,6 +112,7 @@ def test_httpx_availability():
 
     try:
         import httpx
+
         print(f"\n✅ httpx disponível")
         print(f"   Versão: {httpx.__version__}")
         print(f"   Detecção de firewall: ATIVA")
@@ -168,4 +168,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n\n❌ Erro fatal: {e}")
         import traceback
+
         traceback.print_exc()

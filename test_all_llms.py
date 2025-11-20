@@ -4,15 +4,16 @@ Testa todas as APIs de LLM configuradas e mostra quais estão funcionando.
 
 Útil para verificar disponibilidade e escolher o melhor provider.
 """
+
 import os
 import sys
 from dotenv import load_dotenv
 
 load_dotenv()
 
-print("="*70)
+print("=" * 70)
 print("🔍 TESTE DE TODAS AS APIs DE LLM")
-print("="*70)
+print("=" * 70)
 
 results = []
 
@@ -24,11 +25,12 @@ groq_key = os.getenv("GROQ_API_KEY")
 if groq_key:
     try:
         from groq import Groq
+
         client = Groq(api_key=groq_key)
         response = client.chat.completions.create(
             model="llama-3.1-8b",
             messages=[{"role": "user", "content": "Diga apenas 'OK' em português"}],
-            max_tokens=10
+            max_tokens=10,
         )
         reply = response.choices[0].message.content
         print(f"   ✅ GROQ funcionando: {reply}")
@@ -53,10 +55,9 @@ google_key = os.getenv("GOOGLE_API_KEY")
 if google_key:
     try:
         from langchain_google_genai import ChatGoogleGenerativeAI
+
         llm = ChatGoogleGenerativeAI(
-            model="gemini-2.0-flash",
-            google_api_key=google_key,
-            temperature=0.5
+            model="gemini-2.0-flash", google_api_key=google_key, temperature=0.5
         )
         response = llm.invoke("Diga apenas 'OK' em português")
         print(f"   ✅ GEMINI funcionando: {response.content}")
@@ -66,7 +67,9 @@ if google_key:
         results.append(("Google Gemini", "❌ Erro", str(e)[:40]))
 else:
     print("   ⚠️  GOOGLE_API_KEY não configurada")
-    results.append(("Google Gemini", "⚠️  Não configurada", "Obtenha em: https://aistudio.google.com/apikey"))
+    results.append(
+        ("Google Gemini", "⚠️  Não configurada", "Obtenha em: https://aistudio.google.com/apikey")
+    )
 
 # =============================================================================
 # 3. OLLAMA (LOCAL)
@@ -76,12 +79,9 @@ ollama_model = os.getenv("OLLAMA_MODEL")
 if ollama_model:
     try:
         from langchain_ollama import ChatOllama
+
         ollama_base_url = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-        llm = ChatOllama(
-            model=ollama_model,
-            base_url=ollama_base_url,
-            temperature=0.5
-        )
+        llm = ChatOllama(model=ollama_model, base_url=ollama_base_url, temperature=0.5)
         response = llm.invoke("Diga apenas 'OK' em português")
         print(f"   ✅ OLLAMA funcionando: {response.content}")
         results.append(("Ollama", "✅ OK", ollama_model))
@@ -96,7 +96,9 @@ if ollama_model:
             results.append(("Ollama", "❌ Erro", error[:40]))
 else:
     print("   ⚠️  OLLAMA_MODEL não configurada")
-    results.append(("Ollama", "⚠️  Não configurada", "Instale: curl -fsSL https://ollama.com/install.sh | sh"))
+    results.append(
+        ("Ollama", "⚠️  Não configurada", "Instale: curl -fsSL https://ollama.com/install.sh | sh")
+    )
 
 # =============================================================================
 # 4. OPENROUTER
@@ -106,17 +108,18 @@ openrouter_key = os.getenv("OPENROUTER_API_KEY")
 if openrouter_key:
     try:
         import httpx
+
         response = httpx.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={
                 "Authorization": f"Bearer {openrouter_key}",
-                "Content-Type": "application/json"
+                "Content-Type": "application/json",
             },
             json={
                 "model": "google/gemini-2.5-flash",
-                "messages": [{"role": "user", "content": "Diga apenas 'OK' em português"}]
+                "messages": [{"role": "user", "content": "Diga apenas 'OK' em português"}],
             },
-            timeout=30.0
+            timeout=30.0,
         )
         if response.status_code == 200:
             reply = response.json()["choices"][0]["message"]["content"]
@@ -147,21 +150,21 @@ else:
 # =============================================================================
 # RESUMO
 # =============================================================================
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("📊 RESUMO DOS TESTES")
-print("="*70)
+print("=" * 70)
 
 print(f"\n{'Provider':<20} {'Status':<20} {'Modelo/Observação':<30}")
-print("-"*70)
+print("-" * 70)
 for provider, status, model in results:
     print(f"{provider:<20} {status:<20} {model:<30}")
 
 # =============================================================================
 # RECOMENDAÇÃO
 # =============================================================================
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("💡 RECOMENDAÇÃO")
-print("="*70)
+print("=" * 70)
 
 working_providers = [p for p, s, m in results if "✅" in s]
 
@@ -199,6 +202,6 @@ else:
     print(f"      - ollama pull llama3.2")
     print(f"      - Adicione no .env: OLLAMA_MODEL=llama3.2")
 
-print("\n" + "="*70)
+print("\n" + "=" * 70)
 print("📚 Veja SETUP_FREE_LLMS.md para mais detalhes")
-print("="*70)
+print("=" * 70)

@@ -118,8 +118,7 @@ else:
         "http://127.0.0.1:8501",
     ]
     logger.warning(
-        "⚠️  CORS using default localhost origins. "
-        "Set CORS_ORIGINS in .env for production!"
+        "⚠️  CORS using default localhost origins. Set CORS_ORIGINS in .env for production!"
     )
 
 app.add_middleware(

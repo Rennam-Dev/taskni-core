@@ -91,6 +91,7 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
 
         # Cria resposta com metadata vazio (pode ser populado depois)
         from taskni_core.schema.metadata_schemas import ResponseMetadata
+
         return AgentInvokeResponse(
             agent_id=payload.agent_id,
             reply=reply,
@@ -107,7 +108,7 @@ async def invoke_agent(request: Request, payload: AgentInvokeRequest):
                 "agent_id": payload.agent_id,
                 "user_id": payload.user_id,
                 "error_type": e.__class__.__name__,
-            }
+            },
         )
         # Retorna mensagem genérica ao cliente (sem detalhes internos)
         raise HTTPException(

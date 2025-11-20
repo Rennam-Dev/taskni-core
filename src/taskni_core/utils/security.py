@@ -12,11 +12,7 @@ import re
 from typing import Optional
 
 
-def sanitize_prompt_input(
-    text: str,
-    max_length: int = 200,
-    allow_multiline: bool = False
-) -> str:
+def sanitize_prompt_input(text: str, max_length: int = 200, allow_multiline: bool = False) -> str:
     """
     Sanitiza input de usuário para prevenir prompt injection.
 
@@ -48,50 +44,50 @@ def sanitize_prompt_input(
         return ""
 
     # 1. Remove caracteres de controle (mantém apenas printable + espaços)
-    text = ''.join(c for c in text if c.isprintable() or c.isspace())
+    text = "".join(c for c in text if c.isprintable() or c.isspace())
 
     # 2. Remove ou substitui múltiplos newlines (tentativa comum de injection)
     if not allow_multiline:
         # Remove TODOS os newlines
-        text = ' '.join(text.split())
+        text = " ".join(text.split())
     else:
         # Permite newlines mas remove múltiplos consecutivos
-        text = re.sub(r'\n{3,}', '\n\n', text)
+        text = re.sub(r"\n{3,}", "\n\n", text)
 
     # 3. Remove palavras-chave perigosas de prompt injection
     # Usa word boundaries para não afetar palavras normais
     dangerous_patterns = [
-        r'\bignore\s+(all\s+)?(previous\s+)?instructions?\b',
-        r'\bdisregard\s+(all\s+)?(previous\s+)?instructions?\b',
-        r'\bforget\s+(all\s+)?(previous\s+)?instructions?\b',
-        r'\boverride\s+instructions?\b',
-        r'\bsystem\s*:\s*',  # Tentativa de injetar system message
-        r'\bassistant\s*:\s*',  # Tentativa de injetar assistant message
-        r'\buser\s*:\s*',  # Tentativa de injetar user message
-        r'\bprompt\s*:\s*',
-        r'\b(you\s+are|you\'re)\s+(now|currently)\b',  # "you are now..."
-        r'\bact\s+as\b',  # "act as..."
-        r'\bpretend\s+(to\s+be|you\s+are)\b',
+        r"\bignore\s+(all\s+)?(previous\s+)?instructions?\b",
+        r"\bdisregard\s+(all\s+)?(previous\s+)?instructions?\b",
+        r"\bforget\s+(all\s+)?(previous\s+)?instructions?\b",
+        r"\boverride\s+instructions?\b",
+        r"\bsystem\s*:\s*",  # Tentativa de injetar system message
+        r"\bassistant\s*:\s*",  # Tentativa de injetar assistant message
+        r"\buser\s*:\s*",  # Tentativa de injetar user message
+        r"\bprompt\s*:\s*",
+        r"\b(you\s+are|you\'re)\s+(now|currently)\b",  # "you are now..."
+        r"\bact\s+as\b",  # "act as..."
+        r"\bpretend\s+(to\s+be|you\s+are)\b",
     ]
 
     for pattern in dangerous_patterns:
-        text = re.sub(pattern, ' ', text, flags=re.IGNORECASE)
+        text = re.sub(pattern, " ", text, flags=re.IGNORECASE)
 
     # 4. Remove caracteres perigosos específicos
     dangerous_chars = [
-        '\x00',  # Null byte
-        '\r',    # Carriage return (se ainda existir)
+        "\x00",  # Null byte
+        "\r",  # Carriage return (se ainda existir)
     ]
     for char in dangerous_chars:
-        text = text.replace(char, '')
+        text = text.replace(char, "")
 
     # 5. Normaliza espaços múltiplos (mas preserva newlines se allow_multiline)
     if allow_multiline:
         # Normaliza espaços horizontais mas preserva newlines
-        text = re.sub(r'[ \t]+', ' ', text)
+        text = re.sub(r"[ \t]+", " ", text)
     else:
         # Remove todos os tipos de espaços múltiplos
-        text = re.sub(r'\s+', ' ', text)
+        text = re.sub(r"\s+", " ", text)
 
     # 6. Remove espaços nas pontas
     text = text.strip()
@@ -103,11 +99,7 @@ def sanitize_prompt_input(
     return text
 
 
-def sanitize_metadata_value(
-    value: str,
-    max_length: int = 500,
-    field_name: str = "metadata"
-) -> str:
+def sanitize_metadata_value(value: str, max_length: int = 500, field_name: str = "metadata") -> str:
     """
     Sanitiza valores de metadata para prevenir injection.
 
@@ -122,11 +114,7 @@ def sanitize_metadata_value(
     Returns:
         Valor sanitizado
     """
-    return sanitize_prompt_input(
-        value,
-        max_length=max_length,
-        allow_multiline=True
-    )
+    return sanitize_prompt_input(value, max_length=max_length, allow_multiline=True)
 
 
 def validate_json_no_injection(obj: dict) -> bool:
@@ -144,6 +132,7 @@ def validate_json_no_injection(obj: dict) -> bool:
     Returns:
         True se seguro, False caso contrário
     """
+
     def check_value(val, depth=0):
         # Limite de profundidade (previne DoS)
         if depth > 10:
@@ -154,7 +143,7 @@ def validate_json_no_injection(obj: dict) -> bool:
             if len(val) > 10000:
                 return False
             # Padrões suspeitos
-            if re.search(r'(__.*?__|<script|javascript:|onerror=)', val, re.IGNORECASE):
+            if re.search(r"(__.*?__|<script|javascript:|onerror=)", val, re.IGNORECASE):
                 return False
         elif isinstance(val, dict):
             for v in val.values():
@@ -193,16 +182,16 @@ def sanitize_rag_filter(filter_dict: dict) -> dict:
 
     for key, value in filter_dict.items():
         # Sanitiza chave (permite apenas alphanumeric + underscore)
-        safe_key = re.sub(r'[^\w]', '', key)
+        safe_key = re.sub(r"[^\w]", "", key)
 
         # Sanitiza valor
         if isinstance(value, str):
             # Remove caracteres perigosos para SQL/NoSQL
             # 1. Remove comentários SQL (-- e /* */)
-            safe_value = re.sub(r'--', '', value)
-            safe_value = re.sub(r'/\*.*?\*/', '', safe_value)
+            safe_value = re.sub(r"--", "", value)
+            safe_value = re.sub(r"/\*.*?\*/", "", safe_value)
             # 2. Remove aspas e caracteres especiais
-            safe_value = re.sub(r'[;\'"\\]', '', safe_value)
+            safe_value = re.sub(r'[;\'"\\]', "", safe_value)
             # 3. Remove espaços extras
             safe_value = safe_value.strip()
             sanitized[safe_key] = safe_value
